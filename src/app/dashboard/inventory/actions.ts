@@ -101,3 +101,21 @@ export async function deleteItem(formData: FormData) {
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/inventory')
 }
+
+export async function editItem(formData: FormData) {
+  const itemId = formData.get('item_id') as string
+  const title = formData.get('title') as string
+  const listed_price = Number(formData.get('listed_price'))
+  
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('items')
+    .update({ title, listed_price })
+    .eq('id', itemId)
+
+  if (error) throw new Error("Erreur lors de la modification de l'article")
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/inventory')
+}
