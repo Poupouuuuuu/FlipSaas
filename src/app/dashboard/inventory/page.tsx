@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { AddItemDialog } from './add-item-dialog'
 import { InventoryClient } from './inventory-client'
+import { InventoryFab } from './inventory-fab'
 
 export default async function InventoryPage() {
   const supabase = await createClient()
@@ -21,10 +22,16 @@ export default async function InventoryPage() {
           <h1 className="text-3xl font-bold tracking-tight">Stock d'articles</h1>
           <p className="text-slate-500">Gérez votre inventaire et suivez vos ventes en cours.</p>
         </div>
-        <AddItemDialog />
+        {/* Desktop: normal button | Mobile: hidden, replaced by FAB */}
+        <div className="hidden sm:block">
+          <AddItemDialog />
+        </div>
       </div>
 
       <InventoryClient items={items || []} />
+      
+      {/* Mobile FAB */}
+      <InventoryFab />
     </div>
   )
 }
