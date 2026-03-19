@@ -84,6 +84,7 @@ function ItemCard({ item }: { item: any }) {
   const [soldDialogOpen, setSoldDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null)
+  const [showCelebration, setShowCelebration] = useState(false)
   const editCompressedFileRef = useRef<File | null>(null)
 
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -146,7 +147,9 @@ function ItemCard({ item }: { item: any }) {
     formData.append('status', 'vendu')
     try {
       await markItemAsSoldOrTransit(formData)
+      setShowCelebration(true)
       toast.success("Vente terminée ! L'argent est ajouté à vos bénéfices. 💰")
+      setTimeout(() => setShowCelebration(false), 2500)
     } catch (err: any) {
       toast.error(err.message)
     }
@@ -168,7 +171,22 @@ function ItemCard({ item }: { item: any }) {
   const currentEditPreview = editImagePreview || item.image_url
 
   return (
-    <Card className="flex flex-col overflow-hidden group">
+    <Card className="flex flex-col overflow-hidden group relative">
+      {/* Celebration overlay */}
+      {showCelebration && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-xl">
+          <div className="flex flex-col items-center gap-2">
+            <div className="text-4xl animate-sale-check">✅</div>
+            <p className="text-sm font-bold text-emerald-600 animate-sale-check" style={{ animationDelay: '0.2s' }}>Vendu !</p>
+            <div className="flex gap-1 mt-1">
+              {['🎉', '💰', '🎊', '✨', '🎉'].map((emoji, i) => (
+                <span key={i} className="text-lg animate-confetti-pop" style={{ animationDelay: `${0.1 * i}s` }}>{emoji}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="relative aspect-square bg-slate-100 dark:bg-slate-800">
         {item.image_url ? (
           <Image
