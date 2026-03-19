@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { AddExpenseForm } from './expense-form'
 import { ExpenseList } from './expense-list'
+import { ExpenseFab } from './expense-fab'
 
 export default async function ExpensesPage() {
   const supabase = await createClient()
@@ -24,7 +25,8 @@ export default async function ExpensesPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 items-start">
-        <div className="md:col-span-1 rounded-xl border bg-card text-card-foreground shadow p-6">
+        {/* Desktop: form visible | Mobile: hidden, use FAB */}
+        <div className="hidden md:block md:col-span-1 rounded-xl border bg-card text-card-foreground shadow p-6">
           <h2 className="font-semibold text-lg mb-4">Nouvelle dépense</h2>
           <AddExpenseForm />
         </div>
@@ -34,6 +36,9 @@ export default async function ExpensesPage() {
           <ExpenseList expenses={expenses || []} />
         </div>
       </div>
+
+      {/* Mobile FAB */}
+      <ExpenseFab />
     </div>
   )
 }
