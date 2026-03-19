@@ -48,6 +48,19 @@ function ItemCard({ item }: { item: any }) {
   const [soldDialogOpen, setSoldDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
 
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    formData.append('item_id', item.id)
+    try {
+      await editItem(formData)
+      toast.success('Article modifié avec succès')
+      setEditDialogOpen(false)
+    } catch (err: any) {
+      toast.error(err.message)
+    }
+  }
+
   const formatCurrency = (val: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val)
 
   const handleTransitWithPrice = async (e: React.FormEvent<HTMLFormElement>) => {
