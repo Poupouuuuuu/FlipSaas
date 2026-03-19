@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/sonner'
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
 export const metadata: Metadata = {
-  title: 'FlipSaaS | Dashboard Vendeur',
+  title: 'Stockeesy | Dashboard Vendeur',
   description: 'Outil de gestion financière et de stock pour vendeurs de seconde main',
 }
 

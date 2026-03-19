@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react'
 
 export function AddExpenseForm() {
   const [loading, setLoading] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -18,7 +19,7 @@ export function AddExpenseForm() {
     try {
       await addExpense(formData)
       toast.success('Dépense ajoutée avec succès')
-      e.currentTarget.reset()
+      formRef.current?.reset()
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -27,7 +28,7 @@ export function AddExpenseForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">Titre de la dépense</Label>
         <Input id="title" name="title" placeholder="Ex: Rouleau Scotch x2" required />

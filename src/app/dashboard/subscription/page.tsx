@@ -34,7 +34,7 @@ export default function SubscriptionPage() {
       <div className="text-center max-w-xl mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-4">Passez à la vitesse supérieure</h1>
         <p className="text-slate-500 text-lg">
-          Accédez à votre tableau de bord FlipSaaS en illimité et gérez votre business comme un pro.
+          Accédez à votre tableau de bord Stockeesy en illimité et gérez votre business comme un pro.
         </p>
       </div>
 
