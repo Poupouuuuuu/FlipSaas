@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Package, Truck, Check, Trash2, Pencil } from 'lucide-react'
+import { Package, Truck, Check, Trash2, Pencil, Plus, ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { markItemAsSoldOrTransit, deleteItem, editItem } from './actions'
@@ -18,7 +18,43 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+
+async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      let { width, height } = img
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width)
+        width = maxWidth
+      }
+
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(file); return }
+
+      ctx.drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return }
+          const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
 
 interface ItemCardListProps {
   items: any[]
@@ -47,17 +83,44 @@ export function ItemCardList({ items, emptyMessage }: ItemCardListProps) {
 function ItemCard({ item }: { item: any }) {
   const [soldDialogOpen, setSoldDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null)
+  const editCompressedFileRef = useRef<File | null>(null)
 
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     formData.append('item_id', item.id)
+    
+    // Replace raw image with compressed version if one was selected
+    if (editCompressedFileRef.current) {
+      formData.delete('image')
+      formData.append('image', editCompressedFileRef.current)
+    }
+
     try {
       await editItem(formData)
       toast.success('Article modifié avec succès')
       setEditDialogOpen(false)
+      setEditImagePreview(null)
+      editCompressedFileRef.current = null
     } catch (err: any) {
       toast.error(err.message)
+    }
+  }
+
+  async function handleEditImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      setEditImagePreview(URL.createObjectURL(file))
+      try {
+        const compressed = await compressImage(file)
+        editCompressedFileRef.current = compressed
+      } catch {
+        editCompressedFileRef.current = file
+      }
+    } else {
+      setEditImagePreview(null)
+      editCompressedFileRef.current = null
     }
   }
 
@@ -101,6 +164,9 @@ function ItemCard({ item }: { item: any }) {
     }
   }
 
+  // Determine the preview to show in the edit dialog
+  const currentEditPreview = editImagePreview || item.image_url
+
   return (
     <Card className="flex flex-col overflow-hidden group">
       <div className="relative aspect-square bg-slate-100 dark:bg-slate-800">
@@ -122,7 +188,13 @@ function ItemCard({ item }: { item: any }) {
 
         <div className="absolute top-2 right-2 flex gap-1.5 z-10 transition-opacity duration-200">
           {item.status === 'en_stock' && (
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <Dialog open={editDialogOpen} onOpenChange={(open) => {
+              setEditDialogOpen(open)
+              if (!open) {
+                setEditImagePreview(null)
+                editCompressedFileRef.current = null
+              }
+            }}>
               <DialogTrigger render={<Button variant="secondary" size="icon" className="h-7 w-7 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-white text-slate-700 dark:text-slate-300 shadow-sm"><Pencil className="h-3.5 w-3.5" /></Button>} />
               <DialogContent className="sm:max-w-[400px]">
                 <DialogHeader>
@@ -130,13 +202,42 @@ function ItemCard({ item }: { item: any }) {
                 </DialogHeader>
                 <form onSubmit={handleEdit} className="space-y-4 pt-2">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Titre</Label>
-                    <Input id="title" name="title" defaultValue={item.title} required />
+                    <Label htmlFor={`edit-title-${item.id}`}>Titre</Label>
+                    <Input id={`edit-title-${item.id}`} name="title" defaultValue={item.title} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="listed_price">Prix affiché (€)</Label>
-                    <Input id="listed_price" name="listed_price" type="number" step="0.01" min="0" defaultValue={item.listed_price} required />
+                    <Label htmlFor={`edit-listed-price-${item.id}`}>Prix affiché (€)</Label>
+                    <Input id={`edit-listed-price-${item.id}`} name="listed_price" type="number" step="0.01" min="0" defaultValue={item.listed_price} required />
                   </div>
+
+                  {/* Image edit section */}
+                  <div className="space-y-2">
+                    <Label htmlFor={`edit-image-${item.id}`}>Photo de l'article</Label>
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <label htmlFor={`edit-image-${item.id}`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors overflow-hidden relative">
+                        {currentEditPreview ? (
+                          <img src={currentEditPreview} alt="Aperçu" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6 text-gray-500">
+                            <ImageIcon className="w-8 h-8 mb-2" />
+                            <p className="text-sm">Cliquez pour ajouter une photo</p>
+                          </div>
+                        )}
+                        <Input
+                          id={`edit-image-${item.id}`}
+                          name="image"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleEditImageChange}
+                        />
+                      </label>
+                      {currentEditPreview && (
+                        <p className="text-xs text-slate-400 mt-1">Cliquez sur l'image pour la changer</p>
+                      )}
+                    </div>
+                  </div>
+
                   <Button type="submit" className="w-full bg-[#09B1BA] hover:bg-[#0799a1] text-white">Enregistrer les modifications</Button>
                 </form>
               </DialogContent>
@@ -198,8 +299,8 @@ function ItemCard({ item }: { item: any }) {
               </DialogHeader>
               <form onSubmit={handleTransitWithPrice} className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sold_price">Prix de vente convenu (€)</Label>
-                  <Input id="sold_price" name="sold_price" type="number" step="0.01" min="0" required defaultValue={item.listed_price} />
+                  <Label htmlFor={`sold-price-${item.id}`}>Prix de vente convenu (€)</Label>
+                  <Input id={`sold-price-${item.id}`} name="sold_price" type="number" step="0.01" min="0" required defaultValue={item.listed_price} />
                 </div>
                 <Button type="submit" className="w-full bg-[#09B1BA] hover:bg-[#0799a1] text-white">Confirmer l'expédition</Button>
               </form>

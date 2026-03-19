@@ -14,29 +14,89 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { addItem } from './actions'
-import { toast } from 'sonner' // Requires 'sonner' to be a standard component or similar, we installed it
+import { toast } from 'sonner'
+
+async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      let { width, height } = img
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width)
+        width = maxWidth
+      }
+
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(file); return }
+
+      ctx.drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return }
+          const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
 
 export function AddItemDialog() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const compressedFileRef = useRef<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     const formData = new FormData(e.currentTarget)
     
+    // Replace the raw image with the compressed version
+    if (compressedFileRef.current) {
+      formData.delete('image')
+      formData.append('image', compressedFileRef.current)
+    }
+
     try {
       await addItem(formData)
       toast.success('Article ajouté au stock ! 🎉')
       setOpen(false)
       formRef.current?.reset()
       setImagePreview(null)
+      compressedFileRef.current = null
     } catch (err: any) {
       toast.error(err.message || 'Une erreur est survenue.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImagePreview(URL.createObjectURL(file))
+      try {
+        const compressed = await compressImage(file)
+        compressedFileRef.current = compressed
+      } catch {
+        compressedFileRef.current = file
+      }
+    } else {
+      setImagePreview(null)
+      compressedFileRef.current = null
     }
   }
 
@@ -88,14 +148,7 @@ export function AddItemDialog() {
                   type="file" 
                   accept="image/*" 
                   className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      setImagePreview(URL.createObjectURL(file))
-                    } else {
-                      setImagePreview(null)
-                    }
-                  }}
+                  onChange={handleImageChange}
                 />
               </label>
             </div>

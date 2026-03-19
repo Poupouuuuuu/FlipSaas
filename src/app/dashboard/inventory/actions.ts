@@ -20,16 +20,16 @@ export async function addItem(formData: FormData) {
 
   if (image && image.size > 0) {
     const fileExt = image.name.split('.').pop()
-    // create a random filename
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
     const filePath = `${user.id}/${fileName}`
 
-    const { error: uploadError, data: uploadData } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('items-images')
       .upload(filePath, image)
 
     if (uploadError) {
-      throw new Error("Erreur lors de l'upload de l'image")
+      console.error('Upload error:', uploadError)
+      throw new Error("Erreur lors de l'upload de l'image: " + uploadError.message)
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -63,8 +63,6 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 
   const supabase = await createClient()
 
-  // Si on passe directement en "Vendu", il nous faut le prix de vente
-  // Si on passe "En transit", pas forcément besoin du prix de vente, mais on peut le renseigner
   const payload: any = { status }
   
   if (sold_price) {
@@ -91,8 +89,6 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 export async function deleteItem(formData: FormData) {
   const itemId = formData.get('item_id') as string
   const supabase = await createClient()
-
-  // Opt: On devrait aussi supprimer l'image du storage, mais par simplicité, on garde l'image orpheline pour le moment, ou on rajoute une logique ici.
   
   const { error } = await supabase.from('items').delete().eq('id', itemId)
 
@@ -106,12 +102,42 @@ export async function editItem(formData: FormData) {
   const itemId = formData.get('item_id') as string
   const title = formData.get('title') as string
   const listed_price = Number(formData.get('listed_price'))
+  const image = formData.get('image') as File | null
   
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('Utilisateur non connecté')
+  }
+
+  const payload: any = { title, listed_price }
+
+  // Handle image update if a new file was provided
+  if (image && image.size > 0) {
+    const fileExt = image.name.split('.').pop()
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+    const filePath = `${user.id}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('items-images')
+      .upload(filePath, image)
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError)
+      throw new Error("Erreur lors de l'upload de l'image: " + uploadError.message)
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('items-images')
+      .getPublicUrl(filePath)
+      
+    payload.image_url = publicUrlData.publicUrl
+  }
 
   const { error } = await supabase
     .from('items')
-    .update({ title, listed_price })
+    .update(payload)
     .eq('id', itemId)
 
   if (error) throw new Error("Erreur lors de la modification de l'article")
