@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, Wallet, PackageOpen, PiggyBank, Euro } from 'lucide-react'
+import { KpiCarousel } from './kpi-carousel'
 
 export async function KpiCards() {
   const supabase = await createClient()
@@ -40,8 +41,8 @@ export async function KpiCards() {
     <>
       {/* Mobile: Horizontal scroll carousel */}
       <div className="md:hidden">
-        {/* Primary KPIs - big horizontal scroll */}
-        <div className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 scrollbar-hide">
+        {/* Primary KPIs - swipable carousel with animated dots */}
+        <KpiCarousel>
           {/* Bénéfice Net */}
           <Card className="min-w-[75vw] snap-center relative overflow-hidden border-emerald-100 dark:border-emerald-900/50 shadow-sm bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-slate-900">
             <div className="absolute -bottom-4 -right-4 text-emerald-500/10 dark:text-emerald-500/5 transform rotate-12 pointer-events-none">
@@ -117,15 +118,7 @@ export async function KpiCards() {
               <p className="text-xs text-slate-500 mt-2 font-medium">Total Reçu + Stock estimé</p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Scroll hint dots */}
-        <div className="flex justify-center gap-1.5 mt-1 mb-2">
-          <div className="w-6 h-1 rounded-full bg-[#09B1BA]" />
-          <div className="w-1.5 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-          <div className="w-1.5 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-          <div className="w-1.5 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-        </div>
+        </KpiCarousel>
 
         {/* Secondary KPIs - compact grid */}
         <div className="grid grid-cols-2 gap-3 mt-2">
