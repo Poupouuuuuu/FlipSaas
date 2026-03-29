@@ -3,19 +3,29 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Item } from '@/types'
+import { addItemSchema, editItemSchema, markItemStatusSchema } from '@/lib/validations'
 
 export async function addItem(formData: FormData) {
-  const title = formData.get('title') as string
-  const purchase_price = Number(formData.get('purchase_price'))
-  const listed_price = Number(formData.get('listed_price'))
-  const image = formData.get('image') as File | null
-
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     throw new Error('Utilisateur non connecté')
   }
+
+  // Validation Zod
+  const parsed = addItemSchema.safeParse({
+    title: formData.get('title'),
+    purchase_price: Number(formData.get('purchase_price')),
+    listed_price: Number(formData.get('listed_price')),
+  })
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message)
+  }
+
+  const { title, purchase_price, listed_price } = parsed.data
+  const image = formData.get('image') as File | null
 
   // Vérifier la limite free tier (3 articles max)
   const { data: profile } = await supabase
@@ -54,7 +64,7 @@ export async function addItem(formData: FormData) {
     const { data: publicUrlData } = supabase.storage
       .from('items-images')
       .getPublicUrl(filePath)
-      
+
     image_url = publicUrlData.publicUrl
   }
 
@@ -76,14 +86,29 @@ export async function addItem(formData: FormData) {
 }
 
 export async function markItemAsSoldOrTransit(formData: FormData) {
-  const itemId = formData.get('item_id') as string
-  const status = formData.get('status') as 'en_transit' | 'vendu'
-  const sold_price = formData.get('sold_price') ? Number(formData.get('sold_price')) : null
-
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('Utilisateur non connecté')
+  }
+
+  const itemId = formData.get('item_id') as string
+
+  // Validation Zod
+  const parsed = markItemStatusSchema.safeParse({
+    status: formData.get('status'),
+    sold_price: formData.get('sold_price') ? Number(formData.get('sold_price')) : null,
+  })
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message)
+  }
+
+  const { status, sold_price } = parsed.data
 
   const payload: Partial<Pick<Item, 'status' | 'sold_price' | 'sold_at'>> = { status }
-  
+
   if (sold_price) {
     payload.sold_price = sold_price
   }
@@ -92,13 +117,19 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
     payload.sold_at = new Date().toISOString()
   }
 
-  const { error } = await supabase
+  // Ownership check : .eq('user_id', user.id)
+  const { error, count } = await supabase
     .from('items')
-    .update(payload)
+    .update(payload, { count: 'exact' })
     .eq('id', itemId)
+    .eq('user_id', user.id)
 
   if (error) {
     throw new Error("Erreur de mise à jour du statut")
+  }
+
+  if (count === 0) {
+    throw new Error("Article introuvable ou non autorisé")
   }
 
   revalidatePath('/dashboard')
@@ -106,13 +137,28 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 }
 
 export async function deleteItem(formData: FormData) {
-  const itemId = formData.get('item_id') as string
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Récupérer l'image avant suppression
-  const { data: item } = await supabase.from('items').select('image_url').eq('id', itemId).single()
+  if (!user) {
+    throw new Error('Utilisateur non connecté')
+  }
 
-  if (item?.image_url) {
+  const itemId = formData.get('item_id') as string
+
+  // Récupérer l'image avant suppression (avec ownership check)
+  const { data: item } = await supabase
+    .from('items')
+    .select('image_url')
+    .eq('id', itemId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!item) {
+    throw new Error("Article introuvable ou non autorisé")
+  }
+
+  if (item.image_url) {
     const storagePath = item.image_url.split('/items-images/')[1]
     if (storagePath) {
       const { error: storageError } = await supabase.storage.from('items-images').remove([storagePath])
@@ -120,7 +166,11 @@ export async function deleteItem(formData: FormData) {
     }
   }
 
-  const { error } = await supabase.from('items').delete().eq('id', itemId)
+  const { error } = await supabase
+    .from('items')
+    .delete()
+    .eq('id', itemId)
+    .eq('user_id', user.id)
 
   if (error) throw new Error("Erreur lors de la suppression de l'article")
 
@@ -129,11 +179,6 @@ export async function deleteItem(formData: FormData) {
 }
 
 export async function editItem(formData: FormData) {
-  const itemId = formData.get('item_id') as string
-  const title = formData.get('title') as string
-  const listed_price = Number(formData.get('listed_price'))
-  const image = formData.get('image') as File | null
-  
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -141,14 +186,38 @@ export async function editItem(formData: FormData) {
     throw new Error('Utilisateur non connecté')
   }
 
+  const itemId = formData.get('item_id') as string
+
+  // Validation Zod
+  const parsed = editItemSchema.safeParse({
+    title: formData.get('title'),
+    listed_price: Number(formData.get('listed_price')),
+  })
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message)
+  }
+
+  const { title, listed_price } = parsed.data
+  const image = formData.get('image') as File | null
+
   const payload: Partial<Pick<Item, 'title' | 'listed_price' | 'image_url'>> = { title, listed_price }
 
   // Handle image update if a new file was provided
   if (image && image.size > 0) {
-    // Supprimer l'ancienne image si elle existe
-    const { data: existingItem } = await supabase.from('items').select('image_url').eq('id', itemId).single()
+    // Supprimer l'ancienne image si elle existe (avec ownership check)
+    const { data: existingItem } = await supabase
+      .from('items')
+      .select('image_url')
+      .eq('id', itemId)
+      .eq('user_id', user.id)
+      .single()
 
-    if (existingItem?.image_url) {
+    if (!existingItem) {
+      throw new Error("Article introuvable ou non autorisé")
+    }
+
+    if (existingItem.image_url) {
       const oldPath = existingItem.image_url.split('/items-images/')[1]
       if (oldPath) {
         const { error: removeError } = await supabase.storage.from('items-images').remove([oldPath])
@@ -172,16 +241,22 @@ export async function editItem(formData: FormData) {
     const { data: publicUrlData } = supabase.storage
       .from('items-images')
       .getPublicUrl(filePath)
-      
+
     payload.image_url = publicUrlData.publicUrl
   }
 
-  const { error } = await supabase
+  // Ownership check : .eq('user_id', user.id)
+  const { error, count } = await supabase
     .from('items')
-    .update(payload)
+    .update(payload, { count: 'exact' })
     .eq('id', itemId)
+    .eq('user_id', user.id)
 
   if (error) throw new Error("Erreur lors de la modification de l'article")
+
+  if (count === 0) {
+    throw new Error("Article introuvable ou non autorisé")
+  }
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/inventory')
