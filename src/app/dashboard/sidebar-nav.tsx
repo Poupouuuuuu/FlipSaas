@@ -40,22 +40,14 @@ function NavLinks({ isSubscribed, isAdmin, onLinkClick }: { isSubscribed: boolea
         Tableau de bord
       </Link>
       
-      {isSubscribed ? (
-        <>
-          <Link href="/dashboard/inventory" className={linkClass('/dashboard/inventory')} onClick={onLinkClick}>
-            <Package className="h-4 w-4" />
-            Stock d'articles
-          </Link>
-          <Link href="/dashboard/expenses" className={linkClass('/dashboard/expenses')} onClick={onLinkClick}>
-            <Receipt className="h-4 w-4" />
-            Frais annexes
-          </Link>
-        </>
-      ) : (
-        <div className="pt-2 px-3 text-sm text-amber-600 font-medium tracking-tight">
-          Abonnez-vous pour débloquer ces fonctionnalités.
-        </div>
-      )}
+      <Link href="/dashboard/inventory" className={linkClass('/dashboard/inventory')} onClick={onLinkClick}>
+        <Package className="h-4 w-4" />
+        Stock d'articles
+      </Link>
+      <Link href="/dashboard/expenses" className={linkClass('/dashboard/expenses')} onClick={onLinkClick}>
+        <Receipt className="h-4 w-4" />
+        Frais annexes
+      </Link>
 
       {!isSubscribed && (
         <Link
