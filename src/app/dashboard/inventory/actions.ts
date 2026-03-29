@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { Item } from '@/types'
 
 export async function addItem(formData: FormData) {
   const title = formData.get('title') as string
@@ -14,6 +15,24 @@ export async function addItem(formData: FormData) {
 
   if (!user) {
     throw new Error('Utilisateur non connecté')
+  }
+
+  // Vérifier la limite free tier (3 articles max)
+  const { data: profile } = await supabase
+    .from('users')
+    .select('subscription_status, role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.subscription_status !== 'active' && profile?.role !== 'admin') {
+    const { count } = await supabase
+      .from('items')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    if ((count || 0) >= 3) {
+      throw new Error('Limite atteinte. Abonnez-vous pour ajouter des articles illimités.')
+    }
   }
 
   let image_url = null
@@ -63,7 +82,7 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 
   const supabase = await createClient()
 
-  const payload: any = { status }
+  const payload: Partial<Pick<Item, 'status' | 'sold_price' | 'sold_at'>> = { status }
   
   if (sold_price) {
     payload.sold_price = sold_price
@@ -89,7 +108,18 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 export async function deleteItem(formData: FormData) {
   const itemId = formData.get('item_id') as string
   const supabase = await createClient()
-  
+
+  // Récupérer l'image avant suppression
+  const { data: item } = await supabase.from('items').select('image_url').eq('id', itemId).single()
+
+  if (item?.image_url) {
+    const storagePath = item.image_url.split('/items-images/')[1]
+    if (storagePath) {
+      const { error: storageError } = await supabase.storage.from('items-images').remove([storagePath])
+      if (storageError) console.error('Erreur suppression image:', storageError.message)
+    }
+  }
+
   const { error } = await supabase.from('items').delete().eq('id', itemId)
 
   if (error) throw new Error("Erreur lors de la suppression de l'article")
@@ -111,10 +141,21 @@ export async function editItem(formData: FormData) {
     throw new Error('Utilisateur non connecté')
   }
 
-  const payload: any = { title, listed_price }
+  const payload: Partial<Pick<Item, 'title' | 'listed_price' | 'image_url'>> = { title, listed_price }
 
   // Handle image update if a new file was provided
   if (image && image.size > 0) {
+    // Supprimer l'ancienne image si elle existe
+    const { data: existingItem } = await supabase.from('items').select('image_url').eq('id', itemId).single()
+
+    if (existingItem?.image_url) {
+      const oldPath = existingItem.image_url.split('/items-images/')[1]
+      if (oldPath) {
+        const { error: removeError } = await supabase.storage.from('items-images').remove([oldPath])
+        if (removeError) console.error('Erreur suppression ancienne image:', removeError.message)
+      }
+    }
+
     const fileExt = image.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
     const filePath = `${user.id}/${fileName}`

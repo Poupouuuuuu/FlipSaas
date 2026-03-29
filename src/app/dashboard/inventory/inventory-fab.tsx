@@ -14,37 +14,11 @@ import {
 } from '@/components/ui/dialog'
 import { addItem } from './actions'
 import { toast } from 'sonner'
+import { compressImage } from '@/lib/compress-image'
+import Link from 'next/link'
+import { Lock } from 'lucide-react'
 
-async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      let { width, height } = img
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width)
-        width = maxWidth
-      }
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) { resolve(file); return }
-      ctx.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { resolve(file); return }
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }))
-        },
-        'image/jpeg',
-        quality
-      )
-    }
-    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
-    img.src = URL.createObjectURL(file)
-  })
-}
-
-export function InventoryFab() {
+export function InventoryFab({ isLimited = false }: { isLimited?: boolean }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -66,8 +40,8 @@ export function InventoryFab() {
       formRef.current?.reset()
       setImagePreview(null)
       compressedFileRef.current = null
-    } catch (err: any) {
-      toast.error(err.message || 'Une erreur est survenue.')
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Une erreur est survenue.')
     } finally {
       setLoading(false)
     }
@@ -86,6 +60,18 @@ export function InventoryFab() {
       setImagePreview(null)
       compressedFileRef.current = null
     }
+  }
+
+  if (isLimited) {
+    return (
+      <Link
+        href="/dashboard/subscription"
+        className="sm:hidden fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full bg-slate-400 text-white shadow-lg flex items-center justify-center"
+        aria-label="Limite atteinte — S'abonner"
+      >
+        <Lock className="h-6 w-6" />
+      </Link>
+    )
   }
 
   return (

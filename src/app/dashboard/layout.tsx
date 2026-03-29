@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { DesktopSidebar, MobileHeader } from './sidebar-nav'
 import { BottomNav } from './bottom-nav'
+import { OnboardingModal } from './onboarding-modal'
 
 export default async function DashboardLayout({
   children,
@@ -15,10 +16,11 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  const { data: userData } = await supabase.from('users').select('role, subscription_status').eq('id', user.id).single()
+  const { data: userData } = await supabase.from('users').select('role, subscription_status, has_onboarded').eq('id', user.id).single()
   const isAdmin = userData?.role === 'admin'
   const isSubscribed = userData?.subscription_status === 'active' || isAdmin
-  
+  const hasOnboarded = userData?.has_onboarded ?? false
+
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-background">
       {/* Sidebar Desktop */}
@@ -35,6 +37,8 @@ export default async function DashboardLayout({
         {/* Bottom Navigation - Mobile only */}
         <BottomNav />
       </div>
+
+      <OnboardingModal show={!hasOnboarded} />
     </div>
   )
 }

@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Stripe Checkout Error:', error)
     return NextResponse.json({ error: 'Erreur Serveur Stripe' }, { status: 500 })
   }

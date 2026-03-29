@@ -19,45 +19,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState, useRef } from 'react'
-
-async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      let { width, height } = img
-
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width)
-        width = maxWidth
-      }
-
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) { resolve(file); return }
-
-      ctx.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { resolve(file); return }
-          const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          })
-          resolve(compressedFile)
-        },
-        'image/jpeg',
-        quality
-      )
-    }
-    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
-    img.src = URL.createObjectURL(file)
-  })
-}
+import { compressImage } from '@/lib/compress-image'
+import type { Item } from '@/types'
 
 interface ItemCardListProps {
-  items: any[]
+  items: Item[]
   emptyMessage: string
 }
 
@@ -80,7 +46,7 @@ export function ItemCardList({ items, emptyMessage }: ItemCardListProps) {
   )
 }
 
-function ItemCard({ item }: { item: any }) {
+function ItemCard({ item }: { item: Item }) {
   const [soldDialogOpen, setSoldDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null)
@@ -104,8 +70,8 @@ function ItemCard({ item }: { item: any }) {
       setEditDialogOpen(false)
       setEditImagePreview(null)
       editCompressedFileRef.current = null
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     }
   }
 
@@ -136,8 +102,8 @@ function ItemCard({ item }: { item: any }) {
       await markItemAsSoldOrTransit(formData)
       toast.success('Article expédié ! En attente de livraison. 🚚')
       setSoldDialogOpen(false)
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     }
   }
 
@@ -150,8 +116,8 @@ function ItemCard({ item }: { item: any }) {
       setShowCelebration(true)
       toast.success("Vente terminée ! L'argent est ajouté à vos bénéfices. 💰")
       setTimeout(() => setShowCelebration(false), 2500)
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     }
   }
 
@@ -162,8 +128,8 @@ function ItemCard({ item }: { item: any }) {
     try {
       await deleteItem(formData)
       toast.success('Article supprimé')
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     }
   }
 
@@ -296,7 +262,7 @@ function ItemCard({ item }: { item: any }) {
         {item.status === 'vendu' && (
           <div className="flex justify-between items-center text-sm mt-1">
             <span className="text-slate-500 text-xs">Bénéfice Net:</span>
-            <span className="font-bold text-emerald-600">{formatCurrency(item.sold_price - item.purchase_price)}</span>
+            <span className="font-bold text-emerald-600">{formatCurrency((item.sold_price ?? 0) - item.purchase_price)}</span>
           </div>
         )}
       </CardContent>

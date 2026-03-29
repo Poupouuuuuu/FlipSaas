@@ -19,8 +19,8 @@ export function InviteUserForm() {
       await inviteUserAction(formData)
       toast.success('Invitation envoyée ! Le client a reçu un email contenant son Magic Link.')
       e.currentTarget.reset()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setLoading(false)
     }
@@ -51,8 +51,8 @@ export function DeleteUserButton({ userId }: { userId: string }) {
       formData.append('user_id', userId)
       await deleteUserAction(formData)
       toast.success('Compte client supprimé')
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setLoading(false)
     }

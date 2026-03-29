@@ -15,44 +15,11 @@ import {
 } from '@/components/ui/dialog'
 import { addItem } from './actions'
 import { toast } from 'sonner'
+import { compressImage } from '@/lib/compress-image'
+import Link from 'next/link'
+import { Lock } from 'lucide-react'
 
-async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      let { width, height } = img
-
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width)
-        width = maxWidth
-      }
-
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) { resolve(file); return }
-
-      ctx.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { resolve(file); return }
-          const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          })
-          resolve(compressedFile)
-        },
-        'image/jpeg',
-        quality
-      )
-    }
-    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
-    img.src = URL.createObjectURL(file)
-  })
-}
-
-export function AddItemDialog() {
+export function AddItemDialog({ isLimited = false }: { isLimited?: boolean }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -77,8 +44,8 @@ export function AddItemDialog() {
       formRef.current?.reset()
       setImagePreview(null)
       compressedFileRef.current = null
-    } catch (err: any) {
-      toast.error(err.message || 'Une erreur est survenue.')
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Une erreur est survenue.')
     } finally {
       setLoading(false)
     }
@@ -98,6 +65,18 @@ export function AddItemDialog() {
       setImagePreview(null)
       compressedFileRef.current = null
     }
+  }
+
+  if (isLimited) {
+    return (
+      <Link
+        href="/dashboard/subscription"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+      >
+        <Lock className="h-4 w-4" />
+        Limite atteinte — S&apos;abonner
+      </Link>
+    )
   }
 
   return (

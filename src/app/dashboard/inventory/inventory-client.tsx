@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Search, X, ArrowUpDown } from 'lucide-react'
 import { ItemCardList } from './item-card-list'
 import { Button } from '@/components/ui/button'
+import type { Item } from '@/types'
 
 interface InventoryClientProps {
-  items: any[]
+  items: Item[]
 }
 
 type SortOption = 'date_desc' | 'date_asc' | 'price_asc' | 'price_desc' | 'listed_asc' | 'listed_desc'
@@ -27,14 +27,12 @@ export function InventoryClient({ items }: InventoryClientProps) {
   const [sortBy, setSortBy] = useState<SortOption>('date_desc')
   const [showSort, setShowSort] = useState(false)
 
-  const allItems = items || []
-
   // Filter + sort
   const processedItems = useMemo(() => {
-    let filtered = allItems
-    
+    let filtered = items
+
     if (searchQuery.trim()) {
-      filtered = allItems.filter(item =>
+      filtered = items.filter(item =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
@@ -50,11 +48,7 @@ export function InventoryClient({ items }: InventoryClientProps) {
         default: return 0
       }
     })
-  }, [allItems, searchQuery, sortBy])
-
-  const stockItems = processedItems.filter(item => item.status === 'en_stock')
-  const transitItems = processedItems.filter(item => item.status === 'en_transit')
-  const soldItems = processedItems.filter(item => item.status === 'vendu')
+  }, [items, searchQuery, sortBy])
 
   return (
     <>
@@ -115,22 +109,7 @@ export function InventoryClient({ items }: InventoryClientProps) {
         </p>
       )}
 
-      <Tabs defaultValue="stock" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="stock">En Stock ({stockItems.length})</TabsTrigger>
-          <TabsTrigger value="transit">En Transit ({transitItems.length})</TabsTrigger>
-          <TabsTrigger value="vendu">Vendus ({soldItems.length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="stock">
-          <ItemCardList items={stockItems} emptyMessage="Aucun article en stock. Ajoutez-en un !" />
-        </TabsContent>
-        <TabsContent value="transit">
-          <ItemCardList items={transitItems} emptyMessage="Aucun article en cours de livraison." />
-        </TabsContent>
-        <TabsContent value="vendu">
-          <ItemCardList items={soldItems} emptyMessage="Aucun article vendu pour le moment." />
-        </TabsContent>
-      </Tabs>
+      <ItemCardList items={processedItems} emptyMessage="Aucun article dans cette catégorie." />
     </>
   )
 }

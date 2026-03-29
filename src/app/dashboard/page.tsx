@@ -3,8 +3,23 @@ import { RecentSales } from './recent-sales'
 import { QuickActions } from './quick-actions'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { createClient } from '@/utils/supabase/server'
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let isLimited = false
+  if (user) {
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase.from('users').select('subscription_status, role').eq('id', user.id).single(),
+      supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    ])
+    isLimited = profile?.subscription_status !== 'active'
+      && profile?.role !== 'admin'
+      && (count || 0) >= 3
+  }
+
   return (
     <div className="flex flex-col gap-6 md:gap-8">
       <div className="bg-gradient-to-r from-[#09B1BA]/10 via-transparent to-transparent -mx-4 -mt-4 p-4 lg:-mx-8 lg:-mt-8 lg:p-8 rounded-b-3xl border-b border-white/20 dark:border-slate-800/20 mb-2">
@@ -19,7 +34,7 @@ export default function Dashboard() {
       </Suspense>
 
       {/* Quick Actions */}
-      <QuickActions />
+      <QuickActions isLimited={isLimited} />
 
       {/* Recent Sales */}
       <Suspense fallback={<RecentSalesSkeleton />}>

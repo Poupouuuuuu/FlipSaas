@@ -6,6 +6,7 @@ import { Trash2, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { deleteExpense } from './actions'
 import { toast } from 'sonner'
+import type { Expense } from '@/types'
 import {
   Table,
   TableBody,
@@ -15,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-export function ExpenseList({ expenses }: { expenses: any[] }) {
+export function ExpenseList({ expenses }: { expenses: Expense[] }) {
   if (!expenses || expenses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 border-dashed">
@@ -34,8 +35,8 @@ export function ExpenseList({ expenses }: { expenses: any[] }) {
     try {
       await deleteExpense(formData)
       toast.success('Dépense supprimée')
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     }
   }
 

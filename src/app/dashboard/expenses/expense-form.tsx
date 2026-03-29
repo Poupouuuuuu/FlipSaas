@@ -20,8 +20,8 @@ export function AddExpenseForm() {
       await addExpense(formData)
       toast.success('Dépense ajoutée avec succès')
       formRef.current?.reset()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setLoading(false)
     }

@@ -16,37 +16,10 @@ import {
 import { toast } from 'sonner'
 import { addItem } from './inventory/actions'
 import { addExpense } from './expenses/actions'
+import { compressImage } from '@/lib/compress-image'
+import { Lock } from 'lucide-react'
 
-async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image()
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      let { width, height } = img
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width)
-        width = maxWidth
-      }
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) { resolve(file); return }
-      ctx.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { resolve(file); return }
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }))
-        },
-        'image/jpeg',
-        quality
-      )
-    }
-    img.onerror = () => reject(new Error('Impossible de lire l\'image'))
-    img.src = URL.createObjectURL(file)
-  })
-}
-
-export function QuickActions() {
+export function QuickActions({ isLimited = false }: { isLimited?: boolean }) {
   const [itemDialogOpen, setItemDialogOpen] = useState(false)
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
   const [itemLoading, setItemLoading] = useState(false)
@@ -71,8 +44,8 @@ export function QuickActions() {
       itemFormRef.current?.reset()
       setImagePreview(null)
       compressedFileRef.current = null
-    } catch (err: any) {
-      toast.error(err.message || 'Une erreur est survenue.')
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Une erreur est survenue.')
     } finally {
       setItemLoading(false)
     }
@@ -87,8 +60,8 @@ export function QuickActions() {
       toast.success('Dépense ajoutée avec succès')
       setExpenseDialogOpen(false)
       expenseFormRef.current?.reset()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setExpenseLoading(false)
     }
@@ -122,15 +95,27 @@ export function QuickActions() {
           <span className="text-xs font-medium text-slate-600 dark:text-slate-400 text-center">Voir le stock</span>
         </Link>
 
-        <button
-          onClick={() => setItemDialogOpen(true)}
-          className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all group active:scale-[0.98]"
-        >
-          <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
-            <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-400 text-center">Ajouter article</span>
-        </button>
+        {isLimited ? (
+          <Link
+            href="/dashboard/subscription"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 transition-all group active:scale-[0.98]"
+          >
+            <div className="p-2.5 rounded-xl bg-slate-200 dark:bg-slate-800">
+              <Lock className="h-5 w-5 text-slate-400" />
+            </div>
+            <span className="text-xs font-medium text-slate-400 text-center">Limite atteinte</span>
+          </Link>
+        ) : (
+          <button
+            onClick={() => setItemDialogOpen(true)}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-all group active:scale-[0.98]"
+          >
+            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50 transition-colors">
+              <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-400 text-center">Ajouter article</span>
+          </button>
+        )}
 
         <button
           onClick={() => setExpenseDialogOpen(true)}

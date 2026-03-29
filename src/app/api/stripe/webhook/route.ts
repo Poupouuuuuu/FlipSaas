@@ -12,8 +12,8 @@ export async function POST(req: Request) {
   try {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (err: any) {
-    console.error(`Webhook signature verification failed: ${err.message}`)
+  } catch (err: unknown) {
+    console.error(`Webhook signature verification failed: ${(err as Error).message}`)
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
   }
 
@@ -62,8 +62,8 @@ export async function POST(req: Request) {
       default:
         console.log(`Unhandled event type ${event.type}`)
     }
-  } catch (err: any) {
-    console.error(`Erreur Database Update: ${err.message}`)
+  } catch (err: unknown) {
+    console.error(`Erreur Database Update: ${(err as Error).message}`)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 
