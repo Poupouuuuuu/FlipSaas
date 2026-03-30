@@ -15,8 +15,7 @@ import {
 import { addItem } from './actions'
 import { toast } from 'sonner'
 import { compressImage } from '@/lib/compress-image'
-import Link from 'next/link'
-import { Lock } from 'lucide-react'
+import { UpgradeTriggerFab } from '../upgrade-modal'
 
 export function InventoryFab({ isLimited = false }: { isLimited?: boolean }) {
   const [open, setOpen] = useState(false)
@@ -63,15 +62,7 @@ export function InventoryFab({ isLimited = false }: { isLimited?: boolean }) {
   }
 
   if (isLimited) {
-    return (
-      <Link
-        href="/dashboard/subscription"
-        className="sm:hidden fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full bg-slate-400 text-white shadow-lg flex items-center justify-center"
-        aria-label="Limite atteinte — S'abonner"
-      >
-        <Lock className="h-6 w-6" />
-      </Link>
-    )
+    return <UpgradeTriggerFab />
   }
 
   return (

@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { addItem } from './inventory/actions'
 import { addExpense } from './expenses/actions'
 import { compressImage } from '@/lib/compress-image'
-import { Lock } from 'lucide-react'
+import { UpgradeTriggerCard } from './upgrade-modal'
 
 export function QuickActions({ isLimited = false }: { isLimited?: boolean }) {
   const [itemDialogOpen, setItemDialogOpen] = useState(false)
@@ -96,15 +96,7 @@ export function QuickActions({ isLimited = false }: { isLimited?: boolean }) {
         </Link>
 
         {isLimited ? (
-          <Link
-            href="/dashboard/subscription"
-            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 transition-all group active:scale-[0.98]"
-          >
-            <div className="p-2.5 rounded-xl bg-slate-200 dark:bg-slate-800">
-              <Lock className="h-5 w-5 text-slate-400" />
-            </div>
-            <span className="text-xs font-medium text-slate-400 text-center">Limite atteinte</span>
-          </Link>
+          <UpgradeTriggerCard />
         ) : (
           <button
             onClick={() => setItemDialogOpen(true)}

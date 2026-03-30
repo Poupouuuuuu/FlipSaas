@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { DesktopSidebar, MobileHeader } from './sidebar-nav'
 import { BottomNav } from './bottom-nav'
 import { OnboardingModal } from './onboarding-modal'
+import { SubscriptionSuccessModal } from './subscription-success-modal'
+import { Suspense } from 'react'
 
 export default async function DashboardLayout({
   children,
@@ -39,6 +41,9 @@ export default async function DashboardLayout({
       </div>
 
       <OnboardingModal show={!hasOnboarded} />
+      <Suspense>
+        <SubscriptionSuccessModal />
+      </Suspense>
     </div>
   )
 }
