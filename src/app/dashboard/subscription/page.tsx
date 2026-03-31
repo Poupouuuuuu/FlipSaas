@@ -46,7 +46,8 @@ export default function SubscriptionPage() {
         </CardHeader>
         <CardContent className="text-center pb-6">
           <div className="mt-4 flex items-baseline justify-center gap-x-2">
-            <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">9.99€</span>
+            <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">4.99€</span>
+            <p className="text-xs text-[#09B1BA] font-medium mt-2">Offre de lancement — places limitées</p>
             <span className="text-sm font-semibold leading-6 tracking-wide text-slate-500">/mois</span>
           </div>
           <ul className="mt-8 space-y-3 text-sm leading-6 text-slate-600 dark:text-slate-400 text-left">

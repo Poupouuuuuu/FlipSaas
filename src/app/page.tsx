@@ -206,7 +206,7 @@ export default function LandingPage() {
               {/* Price */}
               <div className="text-center mt-4 mb-8">
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-5xl sm:text-6xl font-extrabold tracking-tight">9.99</span>
+                  <span className="text-5xl sm:text-6xl font-extrabold tracking-tight">4.99</span>
                   <span className="text-2xl font-bold text-slate-400">€</span>
                 </div>
                 <span className="text-sm text-slate-500 dark:text-slate-400">/mois</span>

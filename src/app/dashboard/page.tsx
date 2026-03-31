@@ -11,10 +11,12 @@ export default async function Dashboard() {
 
   let isLimited = false
   if (user) {
-    const [{ data: profile }, { count }] = await Promise.all([
+    const [profileRes, countRes] = await Promise.all([
       supabase.from('users').select('subscription_status, role').eq('id', user.id).single(),
       supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
+    const profile = profileRes.data
+    const count = countRes.count
     isLimited = profile?.subscription_status !== 'active'
       && profile?.role !== 'admin'
       && (count || 0) >= 3
