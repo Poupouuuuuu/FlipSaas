@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Lock, Check, Zap, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +14,14 @@ import Link from 'next/link'
 
 export function UpgradeModal({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
+  const [price, setPrice] = useState('4,99')
+
+  useEffect(() => {
+    fetch('/api/stripe/price')
+      .then(res => res.json())
+      .then(data => { if (data.price) setPrice(data.price) })
+      .catch(() => {})
+  }, [])
 
   return (
     <>
@@ -51,7 +59,7 @@ export function UpgradeModal({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="text-center mb-2">
-            <span className="text-3xl font-extrabold">4,99 €</span>
+            <span className="text-3xl font-extrabold">{price} €</span>
             <span className="text-sm text-slate-500">/mois</span>
             <p className="text-xs text-[#09B1BA] font-medium mt-1">Offre de lancement — places limitées</p>
           </div>

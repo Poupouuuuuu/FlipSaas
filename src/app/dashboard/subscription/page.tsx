@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, Loader2, CreditCard } from 'lucide-react'
@@ -8,6 +8,14 @@ import { toast } from 'sonner'
 
 export default function SubscriptionPage() {
   const [loading, setLoading] = useState(false)
+  const [price, setPrice] = useState('4,99')
+
+  useEffect(() => {
+    fetch('/api/stripe/price')
+      .then(res => res.json())
+      .then(data => { if (data.price) setPrice(data.price) })
+      .catch(() => {})
+  }, [])
 
   async function handleSubscribe() {
     setLoading(true)
@@ -46,7 +54,7 @@ export default function SubscriptionPage() {
         </CardHeader>
         <CardContent className="text-center pb-6">
           <div className="mt-4 flex items-baseline justify-center gap-x-2">
-            <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">4.99€</span>
+            <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">{price} €</span>
             <p className="text-xs text-[#09B1BA] font-medium mt-2">Offre de lancement — places limitées</p>
             <span className="text-sm font-semibold leading-6 tracking-wide text-slate-500">/mois</span>
           </div>
