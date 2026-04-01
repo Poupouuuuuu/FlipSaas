@@ -1,6 +1,7 @@
 import { stripe } from '@/utils/stripe/config'
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
   try {
@@ -9,6 +10,12 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Rate limit: 5 checkout sessions par minute par user
+    const { success: allowed } = rateLimit(`checkout:${user.id}`, 5, 60_000)
+    if (!allowed) {
+      return NextResponse.json({ error: 'Trop de requêtes. Réessayez dans quelques instants.' }, { status: 429 })
     }
 
     // Récupérer le user depuis la DB pour voir s'il a déjà un stripe_customer_id

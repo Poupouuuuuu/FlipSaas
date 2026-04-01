@@ -274,11 +274,14 @@ export default async function LandingPage() {
               <Link href="/politique-confidentialite" className="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Confidentialité
               </Link>
+              <Link href="/cgv" className="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                CGV
+              </Link>
             </div>
 
             {/* Copyright */}
             <p className="text-sm text-slate-400">
-              &copy; 2025 Stockeesy. Tous droits réservés.
+              &copy; 2026 Stockeesy. Tous droits réservés.
             </p>
           </div>
         </div>

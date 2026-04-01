@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Package, Receipt, LogOut, Users, CreditCard, Menu } from 'lucide-react'
+import { LayoutDashboard, Package, Receipt, LogOut, Users, CreditCard, Menu, UserCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -47,6 +47,11 @@ function NavLinks({ isSubscribed, isAdmin, onLinkClick }: { isSubscribed: boolea
       <Link href="/dashboard/expenses" className={linkClass('/dashboard/expenses')} onClick={onLinkClick}>
         <Receipt className="h-4 w-4" />
         Frais annexes
+      </Link>
+
+      <Link href="/dashboard/account" className={linkClass('/dashboard/account')} onClick={onLinkClick}>
+        <UserCircle className="h-4 w-4" />
+        Mon compte
       </Link>
 
       {!isSubscribed && (

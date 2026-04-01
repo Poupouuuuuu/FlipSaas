@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Receipt } from 'lucide-react'
+import { LayoutDashboard, Package, Receipt, UserCircle } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, exactMatch: true },
   { href: '/dashboard/inventory', label: 'Stock', icon: Package },
   { href: '/dashboard/expenses', label: 'Frais', icon: Receipt },
+  { href: '/dashboard/account', label: 'Compte', icon: UserCircle },
 ]
 
 export function BottomNav() {
