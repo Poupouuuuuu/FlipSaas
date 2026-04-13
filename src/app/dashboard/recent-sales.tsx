@@ -43,13 +43,20 @@ export async function RecentSales() {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value)
 
+  const totalRecentProfit = soldItems.reduce((acc, item) => acc + (Number(item.sold_price || 0) - Number(item.purchase_price)), 0)
+
   return (
     <Card className="border-slate-200 dark:border-slate-800">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-[#09B1BA]" />
-          Dernières ventes
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-[#09B1BA]" />
+            Dernières ventes
+          </CardTitle>
+          <span className={`text-xs font-bold ${totalRecentProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            {totalRecentProfit >= 0 ? '+' : ''}{formatCurrency(totalRecentProfit)}
+          </span>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         {soldItems.map((item) => {

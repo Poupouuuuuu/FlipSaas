@@ -174,3 +174,26 @@
 .touch-scroll {
   -webkit-overflow-scrolling: touch;
 }
+
+/* Smooth page transitions */
+.animation-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tap highlight for iOS */
+@media (display-mode: standalone) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Smooth skeleton pulse */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

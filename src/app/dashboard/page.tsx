@@ -1,6 +1,7 @@
 import { KpiCards } from './kpi-cards'
 import { RecentSales } from './recent-sales'
 import { QuickActions } from './quick-actions'
+import { WeeklyStats } from './weekly-stats'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/utils/supabase/server'
@@ -23,14 +24,21 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
-      <div className="bg-gradient-to-r from-[#09B1BA]/10 via-transparent to-transparent -mx-4 -mt-4 p-4 lg:-mx-8 lg:-mt-8 lg:p-8 rounded-b-3xl border-b border-white/20 dark:border-slate-800/20 mb-2">
+    <div className="flex flex-col gap-5 md:gap-8">
+      {/* Header - compact on mobile */}
+      <div className="bg-gradient-to-r from-[#09B1BA]/10 via-transparent to-transparent -mx-4 -mt-4 p-4 lg:-mx-8 lg:-mt-8 lg:p-8 rounded-b-3xl border-b border-white/20 dark:border-slate-800/20">
         <h1 className="text-lg md:text-3xl font-bold tracking-tight mb-0.5 md:mb-1 text-slate-800 dark:text-slate-100">Tableau de bord</h1>
-        <p className="text-xs md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
+        <p className="text-xs md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-2xl hidden md:block">
           Suivez vos performances et développez votre activité.
         </p>
       </div>
 
+      {/* Weekly Stats - the first thing you see */}
+      <Suspense fallback={<Skeleton className="h-32 rounded-xl" />}>
+        <WeeklyStats />
+      </Suspense>
+
+      {/* KPI Cards */}
       <Suspense fallback={<DashboardSkeleton />}>
         <KpiCards />
       </Suspense>
@@ -48,15 +56,22 @@ export default async function Dashboard() {
 
 function DashboardSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className="rounded-xl border bg-card text-card-foreground shadow space-y-2 p-6">
-          <Skeleton className="h-4 w-[150px]" />
-          <Skeleton className="h-8 w-[100px]" />
-          <Skeleton className="h-3 w-[200px]" />
+    <>
+      {/* Mobile */}
+      <div className="md:hidden space-y-3">
+        <div className="grid grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
         </div>
-      ))}
-    </div>
+      </div>
+      {/* Desktop */}
+      <div className="hidden md:grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Skeleton key={i} className="h-32 rounded-xl" />
+        ))}
+      </div>
+    </>
   )
 }
 

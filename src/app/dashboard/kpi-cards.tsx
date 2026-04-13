@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, Wallet, PackageOpen, PiggyBank, Euro } from 'lucide-react'
-import { KpiCarousel } from './kpi-carousel'
 
 export async function KpiCards() {
   const supabase = await createClient()
@@ -56,110 +55,45 @@ export async function KpiCards() {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value)
   }
 
+  // Stock item count
+  const stockCount = stockItems.reduce((acc, item) => acc + Number(item.quantity || 1), 0)
+
   return (
     <>
-      {/* Mobile: Horizontal scroll carousel */}
-      <div className="md:hidden">
-        {/* Primary KPIs - swipable carousel with animated dots */}
-        <KpiCarousel>
-          {/* Bénéfice Net */}
-          <Card className="min-w-[75vw] snap-center relative overflow-hidden border-emerald-100 dark:border-emerald-900/50 shadow-sm bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-slate-900">
-            <div className="absolute -bottom-4 -right-4 text-emerald-500/10 dark:text-emerald-500/5 transform rotate-12 pointer-events-none">
-              <PiggyBank className="w-28 h-28" />
+      {/* Mobile: 3 essential KPIs */}
+      <div className="grid grid-cols-3 gap-2.5 md:hidden">
+        {/* Profit */}
+        <Card className="shadow-sm border-emerald-100 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-slate-900 overflow-hidden relative">
+          <CardContent className="p-3">
+            <PiggyBank className="h-4 w-4 text-emerald-500/60 mb-1" />
+            <div className={`text-base font-bold tracking-tight ${netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+              {formatCurrency(netProfit)}
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 relative z-10 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wide text-slate-600 dark:text-slate-300">Bénéfice Net Réel</CardTitle>
-              <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-full">
-                <PiggyBank className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className={`text-3xl font-bold tracking-tight ${netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                {formatCurrency(netProfit)}
-              </div>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Revenus totaux moins dépenses</p>
-            </CardContent>
-          </Card>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Profit net</p>
+          </CardContent>
+        </Card>
 
-          {/* Budget Disponible */}
-          <Card className="min-w-[75vw] snap-center relative overflow-hidden border-[#09B1BA]/20 dark:border-[#09B1BA]/10 shadow-sm bg-gradient-to-br from-[#09B1BA]/5 to-white dark:from-[#09B1BA]/10 dark:to-slate-900">
-            <div className="absolute -bottom-4 -right-4 text-[#09B1BA]/5 dark:text-[#09B1BA]/5 transform -rotate-12 pointer-events-none">
-              <Wallet className="w-28 h-28" />
+        {/* Budget */}
+        <Card className="shadow-sm border-[#09B1BA]/20 dark:border-[#09B1BA]/10 bg-gradient-to-br from-[#09B1BA]/5 to-white dark:from-[#09B1BA]/10 dark:to-slate-900 overflow-hidden relative">
+          <CardContent className="p-3">
+            <Wallet className="h-4 w-4 text-[#09B1BA]/60 mb-1" />
+            <div className="text-base font-bold tracking-tight text-[#09B1BA]">
+              {formatCurrency(reinvestableBudget)}
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 relative z-10 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wide text-slate-600 dark:text-slate-300">Budget Disponible</CardTitle>
-              <div className="p-2 bg-[#09B1BA]/10 rounded-full">
-                <Wallet className="h-4 w-4 text-[#09B1BA]" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold tracking-tight text-[#09B1BA]">
-                {formatCurrency(reinvestableBudget)}
-              </div>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Réinvestissable immédiatement</p>
-            </CardContent>
-          </Card>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Budget dispo</p>
+          </CardContent>
+        </Card>
 
-          {/* Potentiel de vente */}
-          <Card className="min-w-[75vw] snap-center relative overflow-hidden border-indigo-100 dark:border-indigo-900/50 shadow-sm bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/40 dark:to-slate-900">
-            <div className="absolute -bottom-4 -right-4 text-indigo-500/5 dark:text-indigo-500/5 transform rotate-6 pointer-events-none">
-              <TrendingUp className="w-28 h-28" />
+        {/* Stock value */}
+        <Card className="shadow-sm border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-950/30 dark:to-slate-900 overflow-hidden relative">
+          <CardContent className="p-3">
+            <PackageOpen className="h-4 w-4 text-indigo-500/60 mb-1" />
+            <div className="text-base font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
+              {formatCurrency(potentialSales)}
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 relative z-10 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wide text-slate-600 dark:text-slate-300">Potentiel de vente</CardTitle>
-              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-full">
-                <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
-                {formatCurrency(potentialSales)}
-              </div>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Stock non vendu estimé</p>
-            </CardContent>
-          </Card>
-
-          {/* Patrimoine Brut */}
-          <Card className="min-w-[75vw] snap-center relative overflow-hidden border-amber-100 dark:border-amber-900/50 shadow-sm bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/40 dark:to-slate-900">
-            <div className="absolute -bottom-4 -right-4 text-amber-500/10 dark:text-amber-500/5 transform -rotate-12 pointer-events-none">
-              <PackageOpen className="w-28 h-28" />
-            </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 relative z-10 pb-2">
-              <CardTitle className="text-sm font-semibold tracking-wide text-slate-600 dark:text-slate-300">Patrimoine Brut</CardTitle>
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-full">
-                <PackageOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
-                {formatCurrency(inventoryValue)}
-              </div>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Total Reçu + Stock estimé</p>
-            </CardContent>
-          </Card>
-        </KpiCarousel>
-
-        {/* Secondary KPIs - compact grid */}
-        <div className="grid grid-cols-2 gap-3 mt-2">
-          <Card className="shadow-sm bg-white dark:bg-card border-slate-200 dark:border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-4 px-4">
-              <CardTitle className="text-xs font-semibold text-slate-500">Total Reçu</CardTitle>
-              <Euro className="h-3.5 w-3.5 text-slate-400" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-slate-700 dark:text-slate-200">{formatCurrency(totalReceived)}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm bg-white dark:bg-card border-slate-200 dark:border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-4 px-4">
-              <CardTitle className="text-xs font-semibold text-slate-500">Total Dépensé</CardTitle>
-              <TrendingDown className="h-3.5 w-3.5 text-slate-400" />
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold text-slate-700 dark:text-slate-200">{formatCurrency(totalSpent)}</div>
-            </CardContent>
-          </Card>
-        </div>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">{stockCount} en stock</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Desktop: Standard grid */}

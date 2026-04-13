@@ -86,6 +86,99 @@ export default async function LandingPage() {
           </div>
 
           <p className="mt-3 text-xs sm:text-sm text-slate-400">Aucune carte bancaire requise</p>
+
+          {/* Phone mockup showing the app */}
+          <div className="mt-10 sm:mt-16 flex justify-center">
+            <div className="relative w-[260px] sm:w-[280px]">
+              {/* Phone frame */}
+              <div className="rounded-[2.5rem] border-[6px] border-slate-800 dark:border-slate-600 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-900/20 overflow-hidden">
+                {/* Status bar */}
+                <div className="h-6 bg-slate-800 dark:bg-slate-700 flex items-center justify-center">
+                  <div className="w-16 h-3 bg-slate-900 dark:bg-slate-800 rounded-full" />
+                </div>
+                {/* App content mockup */}
+                <div className="p-3 space-y-3">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#09B1BA]">Stockeesy</span>
+                    <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800" />
+                  </div>
+                  {/* Weekly stats mock */}
+                  <div className="rounded-lg border border-slate-100 dark:border-slate-800 p-2.5">
+                    <p className="text-[8px] font-semibold text-slate-500 mb-1">Cette semaine</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center">
+                        <p className="text-[10px] font-bold text-slate-800 dark:text-white">5</p>
+                        <p className="text-[7px] text-emerald-500 font-medium">+2 ↑</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-bold text-slate-800 dark:text-white">87 €</p>
+                        <p className="text-[7px] text-emerald-500 font-medium">+23 € ↑</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[10px] font-bold text-slate-800 dark:text-white">42 €</p>
+                        <p className="text-[7px] text-emerald-500 font-medium">+15 € ↑</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* KPI mock */}
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 p-2">
+                      <p className="text-[11px] font-bold text-emerald-600">+127 €</p>
+                      <p className="text-[6px] text-slate-400">Profit</p>
+                    </div>
+                    <div className="rounded-lg bg-[#09B1BA]/5 p-2">
+                      <p className="text-[11px] font-bold text-[#09B1BA]">89 €</p>
+                      <p className="text-[6px] text-slate-400">Budget</p>
+                    </div>
+                    <div className="rounded-lg bg-indigo-50 dark:bg-indigo-950/40 p-2">
+                      <p className="text-[11px] font-bold text-indigo-600">340 €</p>
+                      <p className="text-[6px] text-slate-400">Stock</p>
+                    </div>
+                  </div>
+                  {/* Item list mock */}
+                  {['Pull Ralph Lauren', 'Nike Air Max 90', 'Sac Eastpak'].map((title, i) => (
+                    <div key={title} className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <div className={`w-8 h-8 rounded-md flex-shrink-0 ${i === 0 ? 'bg-blue-100' : i === 1 ? 'bg-red-100' : 'bg-amber-100'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[8px] font-semibold truncate text-slate-700 dark:text-slate-200">{title}</p>
+                        <p className="text-[7px] text-slate-400">Achat {(3 + i * 2)},00 €</p>
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-200">{(12 + i * 3)} €</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Bottom nav mock */}
+                <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-2 flex justify-around">
+                  {['■', '□', '◇', '○'].map((icon, i) => (
+                    <div key={i} className={`w-4 h-4 rounded-sm ${i === 0 ? 'bg-[#09B1BA]/20' : 'bg-slate-100 dark:bg-slate-800'}`} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Social proof ─── */}
+      <section className="py-8 sm:py-12 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white">100%</p>
+              <p className="text-xs text-slate-400 font-medium">Mobile-first</p>
+            </div>
+            <div className="hidden sm:block w-px h-10 bg-slate-200 dark:bg-slate-700" />
+            <div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white">30s</p>
+              <p className="text-xs text-slate-400 font-medium">Pour ajouter un article</p>
+            </div>
+            <div className="hidden sm:block w-px h-10 bg-slate-200 dark:bg-slate-700" />
+            <div>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white">4,99€</p>
+              <p className="text-xs text-slate-400 font-medium">Sans engagement</p>
+            </div>
+          </div>
         </div>
       </section>
 
