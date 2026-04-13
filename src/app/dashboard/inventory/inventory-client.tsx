@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Search, X, ArrowUpDown } from 'lucide-react'
 import { ItemCardList } from './item-card-list'
@@ -9,6 +10,9 @@ import type { Item } from '@/types'
 
 interface InventoryClientProps {
   items: Item[]
+  initialSearch: string
+  currentStatus: string
+  totalCount: number
 }
 
 type SortOption = 'date_desc' | 'date_asc' | 'price_asc' | 'price_desc' | 'listed_asc' | 'listed_desc'
@@ -22,22 +26,45 @@ const sortLabels: Record<SortOption, string> = {
   listed_desc: 'Prix affiché ↓',
 }
 
-export function InventoryClient({ items }: InventoryClientProps) {
-  const [searchQuery, setSearchQuery] = useState('')
+export function InventoryClient({ items, initialSearch, currentStatus, totalCount }: InventoryClientProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
   const [sortBy, setSortBy] = useState<SortOption>('date_desc')
   const [showSort, setShowSort] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Filter + sort
-  const processedItems = useMemo(() => {
-    let filtered = items
-
-    if (searchQuery.trim()) {
-      filtered = items.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  const pushSearch = useCallback((query: string) => {
+    const params = new URLSearchParams()
+    params.set('status', currentStatus)
+    params.set('page', '1')
+    if (query.trim()) {
+      params.set('q', query.trim())
     }
+    router.push(`/dashboard/inventory?${params.toString()}`)
+  }, [router, currentStatus])
 
-    return [...filtered].sort((a, b) => {
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => pushSearch(value), 400)
+  }
+
+  const clearSearch = () => {
+    setSearchQuery('')
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    pushSearch('')
+  }
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
+  // Client-side sort only (search is server-side now)
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => {
       switch (sortBy) {
         case 'date_desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         case 'date_asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -48,7 +75,7 @@ export function InventoryClient({ items }: InventoryClientProps) {
         default: return 0
       }
     })
-  }, [items, searchQuery, sortBy])
+  }, [items, sortBy])
 
   return (
     <>
@@ -60,7 +87,7 @@ export function InventoryClient({ items }: InventoryClientProps) {
             type="text"
             placeholder="Rechercher un article..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 pr-9"
           />
           {searchQuery && (
@@ -68,7 +95,7 @@ export function InventoryClient({ items }: InventoryClientProps) {
               variant="ghost"
               size="icon"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-slate-400 hover:text-slate-600"
-              onClick={() => setSearchQuery('')}
+              onClick={clearSearch}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -103,13 +130,17 @@ export function InventoryClient({ items }: InventoryClientProps) {
         </div>
       )}
 
-      {searchQuery.trim() && (
+      {initialSearch && (
         <p className="text-sm text-slate-500">
-          {processedItems.length} résultat{processedItems.length !== 1 ? 's' : ''} pour "{searchQuery}"
+          {totalCount} résultat{totalCount !== 1 ? 's' : ''} pour "{initialSearch}"
         </p>
       )}
 
-      <ItemCardList items={processedItems} emptyMessage="Aucun article dans cette catégorie." />
+      <ItemCardList items={sortedItems} emptyMessage={
+        initialSearch
+          ? `Aucun article trouvé pour "${initialSearch}".`
+          : "Aucun article dans cette catégorie."
+      } />
     </>
   )
 }

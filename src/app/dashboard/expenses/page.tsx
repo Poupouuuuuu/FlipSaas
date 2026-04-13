@@ -28,8 +28,8 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
   return (
     <div className="p-4 lg:p-8 flex flex-col gap-8 max-w-4xl mx-auto w-full">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Frais annexes</h1>
-        <p className="text-slate-500">
+        <h1 className="text-xl sm:text-3xl font-bold tracking-tight sm:mb-2">Frais annexes</h1>
+        <p className="text-slate-500 text-sm hidden sm:block">
           Ajoutez vos dépenses globales (Boosts, cartons, scotch, imprimante) pour calculer votre bénéfice net réel.
         </p>
       </div>

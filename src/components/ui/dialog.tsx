@@ -53,11 +53,21 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-background p-4 text-sm ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // Mobile: bottom sheet
+          "fixed z-50 grid w-full gap-4 bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-sm ring-1 ring-foreground/10 duration-200 outline-none",
+          "bottom-0 left-0 right-0 rounded-t-2xl max-h-[90vh] overflow-y-auto",
+          "data-open:animate-in data-open:slide-in-from-bottom data-open:fade-in-0",
+          "data-closed:animate-out data-closed:slide-out-to-bottom data-closed:fade-out-0",
+          // Desktop: centered dialog
+          "sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:max-w-sm sm:max-h-[85vh]",
+          "sm:data-open:slide-in-from-bottom-0 sm:data-open:zoom-in-95",
+          "sm:data-closed:slide-out-to-bottom-0 sm:data-closed:zoom-out-95",
           className
         )}
         {...props}
       >
+        {/* Mobile drag handle */}
+        <div className="mx-auto w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600 sm:hidden flex-shrink-0" />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
@@ -65,13 +75,12 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 hidden sm:flex"
                 size="icon-sm"
               />
             }
           >
-            <XIcon
-            />
+            <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

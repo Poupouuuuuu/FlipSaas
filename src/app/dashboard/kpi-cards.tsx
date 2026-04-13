@@ -9,8 +9,10 @@ export async function KpiCards() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: items } = await supabase.from('items').select('*').eq('user_id', user.id)
-  const { data: expenses } = await supabase.from('expenses').select('*').eq('user_id', user.id)
+  const [{ data: items }, { data: expenses }] = await Promise.all([
+    supabase.from('items').select('status, purchase_price, listed_price, sold_price').eq('user_id', user.id),
+    supabase.from('expenses').select('amount').eq('user_id', user.id),
+  ])
 
   const safeItems = items || []
   const safeExpenses = expenses || []

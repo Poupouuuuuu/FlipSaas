@@ -25,8 +25,8 @@ export default async function Dashboard() {
   return (
     <div className="flex flex-col gap-6 md:gap-8">
       <div className="bg-gradient-to-r from-[#09B1BA]/10 via-transparent to-transparent -mx-4 -mt-4 p-4 lg:-mx-8 lg:-mt-8 lg:p-8 rounded-b-3xl border-b border-white/20 dark:border-slate-800/20 mb-2">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1 text-slate-800 dark:text-slate-100">Tableau de bord</h1>
-        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
+        <h1 className="text-lg md:text-3xl font-bold tracking-tight mb-0.5 md:mb-1 text-slate-800 dark:text-slate-100">Tableau de bord</h1>
+        <p className="text-xs md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
           Suivez vos performances et développez votre activité.
         </p>
       </div>

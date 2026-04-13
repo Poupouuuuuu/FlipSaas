@@ -112,7 +112,7 @@ export function MobileHeader({ isSubscribed, isAdmin, userEmail }: SidebarNavPro
   const closeSheet = () => setSheetOpen(false)
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-card/80 backdrop-blur-md px-4 lg:h-[60px] lg:px-6 justify-between shadow-sm z-30 relative sticky top-0">
+    <header className="flex h-14 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-card/80 backdrop-blur-md px-4 lg:h-[60px] lg:px-6 justify-between shadow-sm z-30 relative sticky top-0 safe-top">
       
       {/* Mobile Header */}
       <div className="md:hidden flex items-center gap-3">
