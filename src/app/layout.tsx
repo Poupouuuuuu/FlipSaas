@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Stockeesy | Gestion de stock pour revendeurs',
     description: 'Fini Excel. Gère ton stock de revendeur en 30 secondes.',
-    url: 'https://flip-saas-one.vercel.app',
+    url: 'https://stockeesy.vercel.app',
     siteName: 'Stockeesy',
     locale: 'fr_FR',
     type: 'website',

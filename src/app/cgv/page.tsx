@@ -27,8 +27,8 @@ export default function CGVPage() {
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
               Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre
               Stockeesy, éditeur de la plateforme accessible à l&apos;adresse{' '}
-              <a href="https://flip-saas-one.vercel.app" className="text-[#09B1BA] hover:underline">
-                flip-saas-one.vercel.app
+              <a href="https://stockeesy.vercel.app" className="text-[#09B1BA] hover:underline">
+                stockeesy.vercel.app
               </a>
               , et tout utilisateur souscrivant à un abonnement payant (ci-après &quot;l&apos;Abonné&quot;).
             </p>
