@@ -18,24 +18,24 @@ export default async function LandingPage() {
     <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
 
       {/* ─── Navbar ─── */}
-      <nav className="sticky top-0 z-50 border-b border-slate-100 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 border-b border-slate-100 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg safe-top">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#09B1BA] to-[#06D6A0] flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">Stockeesy</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:inline"
             >
               Se connecter
             </Link>
             <Link
               href="/register"
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-[#09B1BA] to-[#06D6A0] text-white hover:opacity-90 transition-opacity"
+              className="text-sm font-medium px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-[#09B1BA] to-[#06D6A0] text-white hover:opacity-90 transition-opacity"
             >
               Essayer gratuitement
             </Link>
@@ -51,25 +51,25 @@ export default async function LandingPage() {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-[#06D6A0]/10 blur-3xl" />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-24 sm:pt-28 sm:pb-32 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#09B1BA]/20 bg-[#09B1BA]/5 text-[#09B1BA] text-sm font-medium mb-8">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-28 sm:pb-32 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#09B1BA]/20 bg-[#09B1BA]/5 text-[#09B1BA] text-sm font-medium mb-6 sm:mb-8">
             <Zap className="h-3.5 w-3.5" />
             Stockeesy
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
             Fini Excel. Gère ton stock de revendeur en{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#09B1BA] to-[#06D6A0]">
               30 secondes.
             </span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-4 sm:mt-6 text-base sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
             Le tableau de bord pensé pour les revendeurs Vinted, Leboncoin et compagnie.
             Stock, marges, colis — tout est sous contrôle, depuis ton téléphone.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/register"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#09B1BA] to-[#06D6A0] text-white font-semibold text-base hover:opacity-90 transition-opacity shadow-lg shadow-[#09B1BA]/25"
@@ -85,15 +85,15 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          <p className="mt-4 text-sm text-slate-400">Aucune carte bancaire requise</p>
+          <p className="mt-3 text-xs sm:text-sm text-slate-400">Aucune carte bancaire requise</p>
         </div>
       </section>
 
       {/* ─── Problème ─── */}
-      <section className="py-20 sm:py-28 bg-white dark:bg-slate-950">
+      <section className="py-14 sm:py-28 bg-white dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
               T&apos;en as marre de...
             </h2>
           </div>
@@ -132,13 +132,13 @@ export default async function LandingPage() {
       </section>
 
       {/* ─── Fonctionnalités ─── */}
-      <section className="py-20 sm:py-28 bg-[#F8FAFC] dark:bg-[#0F172A]">
+      <section className="py-14 sm:py-28 bg-[#F8FAFC] dark:bg-[#0F172A]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
               Tout ce qu&apos;il te faut. Rien de plus.
             </h2>
-            <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-slate-500 dark:text-slate-400">
               Trois écrans. Zéro usine à gaz.
             </p>
           </div>
@@ -184,13 +184,13 @@ export default async function LandingPage() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section className="py-20 sm:py-28 bg-white dark:bg-slate-950">
+      <section className="py-14 sm:py-28 bg-white dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
               Un prix simple. Pas de surprises.
             </h2>
-            <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-slate-500 dark:text-slate-400">
               Pas d&apos;engagement. Annule quand tu veux.
             </p>
           </div>
@@ -247,8 +247,8 @@ export default async function LandingPage() {
 
       {/* ─── Footer ─── */}
       <footer className="border-t border-slate-100 dark:border-slate-800 bg-[#F8FAFC] dark:bg-[#0F172A]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:gap-8">
             {/* Brand */}
             <div className="flex flex-col items-center sm:items-start gap-1">
               <div className="flex items-center gap-2">
@@ -261,7 +261,7 @@ export default async function LandingPage() {
             </div>
 
             {/* Links */}
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <Link href="/login" className="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Se connecter
               </Link>
@@ -280,7 +280,7 @@ export default async function LandingPage() {
             </div>
 
             {/* Copyright */}
-            <p className="text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-400">
               &copy; 2026 Stockeesy. Tous droits réservés.
             </p>
           </div>

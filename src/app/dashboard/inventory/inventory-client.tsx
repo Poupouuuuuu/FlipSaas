@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Search, X, ArrowUpDown } from 'lucide-react'
 import { ItemCardList } from './item-card-list'
@@ -12,6 +12,7 @@ interface InventoryClientProps {
   items: Item[]
   initialSearch: string
   currentStatus: string
+  currentSort: string
   totalCount: number
 }
 
@@ -26,34 +27,42 @@ const sortLabels: Record<SortOption, string> = {
   listed_desc: 'Prix affiché ↓',
 }
 
-export function InventoryClient({ items, initialSearch, currentStatus, totalCount }: InventoryClientProps) {
+export function InventoryClient({ items, initialSearch, currentStatus, currentSort, totalCount }: InventoryClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(initialSearch)
-  const [sortBy, setSortBy] = useState<SortOption>('date_desc')
   const [showSort, setShowSort] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const pushSearch = useCallback((query: string) => {
+  const buildUrl = useCallback((overrides: { q?: string; sort?: string; page?: string }) => {
     const params = new URLSearchParams()
     params.set('status', currentStatus)
-    params.set('page', '1')
-    if (query.trim()) {
-      params.set('q', query.trim())
-    }
-    router.push(`/dashboard/inventory?${params.toString()}`)
-  }, [router, currentStatus])
+    params.set('page', overrides.page || '1')
+
+    const q = overrides.q !== undefined ? overrides.q : initialSearch
+    if (q.trim()) params.set('q', q.trim())
+
+    const sort = overrides.sort || currentSort
+    if (sort !== 'date_desc') params.set('sort', sort)
+
+    return `/dashboard/inventory?${params.toString()}`
+  }, [currentStatus, currentSort, initialSearch])
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => pushSearch(value), 400)
+    debounceRef.current = setTimeout(() => {
+      router.push(buildUrl({ q: value }))
+    }, 400)
   }
 
   const clearSearch = () => {
     setSearchQuery('')
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    pushSearch('')
+    router.push(buildUrl({ q: '' }))
+  }
+
+  const handleSort = (sort: SortOption) => {
+    router.push(buildUrl({ sort }))
   }
 
   useEffect(() => {
@@ -61,21 +70,6 @@ export function InventoryClient({ items, initialSearch, currentStatus, totalCoun
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
   }, [])
-
-  // Client-side sort only (search is server-side now)
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      switch (sortBy) {
-        case 'date_desc': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        case 'date_asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        case 'price_asc': return a.purchase_price - b.purchase_price
-        case 'price_desc': return b.purchase_price - a.purchase_price
-        case 'listed_asc': return a.listed_price - b.listed_price
-        case 'listed_desc': return b.listed_price - a.listed_price
-        default: return 0
-      }
-    })
-  }, [items, sortBy])
 
   return (
     <>
@@ -104,7 +98,7 @@ export function InventoryClient({ items, initialSearch, currentStatus, totalCoun
         <Button
           variant="outline"
           size="icon"
-          className={`h-10 w-10 shrink-0 ${showSort ? 'bg-[#09B1BA]/10 border-[#09B1BA]/30 text-[#09B1BA]' : ''}`}
+          className={`h-10 w-10 shrink-0 ${showSort || currentSort !== 'date_desc' ? 'bg-[#09B1BA]/10 border-[#09B1BA]/30 text-[#09B1BA]' : ''}`}
           onClick={() => setShowSort(!showSort)}
         >
           <ArrowUpDown className="h-4 w-4" />
@@ -117,9 +111,9 @@ export function InventoryClient({ items, initialSearch, currentStatus, totalCoun
           {(Object.entries(sortLabels) as [SortOption, string][]).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => setSortBy(key)}
+              onClick={() => handleSort(key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                sortBy === key
+                currentSort === key
                   ? 'bg-[#09B1BA] text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
@@ -136,7 +130,7 @@ export function InventoryClient({ items, initialSearch, currentStatus, totalCoun
         </p>
       )}
 
-      <ItemCardList items={sortedItems} emptyMessage={
+      <ItemCardList items={items} emptyMessage={
         initialSearch
           ? `Aucun article trouvé pour "${initialSearch}".`
           : "Aucun article dans cette catégorie."

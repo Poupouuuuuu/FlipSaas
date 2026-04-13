@@ -12,7 +12,7 @@ export async function RecentSales() {
 
   const { data: recentSoldItems } = await supabase
     .from('items')
-    .select('*')
+    .select('id, title, image_url, purchase_price, sold_price, sold_at')
     .eq('user_id', user.id)
     .eq('status', 'vendu')
     .order('sold_at', { ascending: false })
@@ -62,7 +62,7 @@ export async function RecentSales() {
               {/* Thumbnail */}
               <div className="relative h-10 w-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
                 {item.image_url ? (
-                  <Image src={item.image_url} alt={item.title} fill className="object-cover" />
+                  <Image src={item.image_url} alt={item.title} fill sizes="40px" loading="lazy" className="object-cover" />
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <ShoppingBag className="h-4 w-4 text-slate-400" />

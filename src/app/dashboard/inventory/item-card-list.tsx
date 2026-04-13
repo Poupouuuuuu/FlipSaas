@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState, useRef } from 'react'
 import { compressImage } from '@/lib/compress-image'
+import { SwipeableRow } from '@/components/swipeable-row'
 import type { Item } from '@/types'
 
 interface ItemCardListProps {
@@ -261,91 +262,100 @@ function MobileItemCard({ item }: { item: Item }) {
   const actions = useItemActions(item)
   const profit = item.status === 'vendu' ? (item.sold_price ?? 0) - item.purchase_price : null
 
+  // Swipe left → delete (all statuses)
+  const rightAction = {
+    icon: <Trash2 className="h-5 w-5 text-white" />,
+    label: 'Supprimer',
+    color: '#ef4444',
+    onAction: actions.handleDelete,
+  }
+
+  // Swipe right → context-dependent action
+  const leftAction = item.status === 'en_stock'
+    ? {
+        icon: <Truck className="h-5 w-5 text-white" />,
+        label: 'Vendu',
+        color: '#09B1BA',
+        onAction: () => actions.setSoldDialogOpen(true),
+      }
+    : item.status === 'en_transit'
+    ? {
+        icon: <Check className="h-5 w-5 text-white" />,
+        label: 'Livré',
+        color: '#10b981',
+        onAction: actions.handleFinalizeSale,
+      }
+    : undefined
+
   return (
     <>
-      <div className="relative flex items-stretch gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card overflow-hidden active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors">
-        {actions.showCelebration && <CelebrationOverlay />}
+      <SwipeableRow leftAction={leftAction} rightAction={rightAction}>
+        <div className="relative flex items-stretch gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card overflow-hidden">
+          {actions.showCelebration && <CelebrationOverlay />}
 
-        {/* Thumbnail */}
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-          {item.image_url ? (
-            <Image
-              src={item.image_url}
-              alt={item.title}
-              fill
-              sizes="64px"
-              loading="lazy"
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex w-full h-full justify-center items-center text-slate-400">
-              <Package className="h-6 w-6 opacity-50" />
-            </div>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h3 className="font-semibold text-sm leading-tight truncate">{item.title}</h3>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-slate-400">Achat {formatCurrency(item.purchase_price)}</span>
+          {/* Thumbnail */}
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+            {item.image_url ? (
+              <Image
+                src={item.image_url}
+                alt={item.title}
+                fill
+                sizes="64px"
+                loading="lazy"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex w-full h-full justify-center items-center text-slate-400">
+                <Package className="h-6 w-6 opacity-50" />
+              </div>
+            )}
           </div>
-          {item.status === 'vendu' && profit !== null && (
-            <span className={`text-xs font-bold mt-0.5 ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-              {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
-            </span>
-          )}
-          {item.status === 'en_transit' && item.sold_price && (
-            <span className="text-xs font-medium text-amber-500 mt-0.5">
-              Convenu : {formatCurrency(item.sold_price)}
-            </span>
-          )}
-        </div>
 
-        {/* Right: price + actions */}
-        <div className="flex flex-col items-end justify-between flex-shrink-0">
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatCurrency(item.listed_price)}</span>
+          {/* Content */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <h3 className="font-semibold text-sm leading-tight truncate">{item.title}</h3>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-slate-400">Achat {formatCurrency(item.purchase_price)}</span>
+            </div>
+            {item.status === 'vendu' && profit !== null && (
+              <span className={`text-xs font-bold mt-0.5 ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+              </span>
+            )}
+            {item.status === 'en_transit' && item.sold_price && (
+              <span className="text-xs font-medium text-amber-500 mt-0.5">
+                Convenu : {formatCurrency(item.sold_price)}
+              </span>
+            )}
+          </div>
 
-          <div className="flex gap-1">
-            {item.status === 'en_stock' && (
-              <>
-                <button
-                  onClick={() => actions.setSoldDialogOpen(true)}
-                  className="h-7 w-7 rounded-full bg-[#09B1BA]/10 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <Truck className="h-3.5 w-3.5 text-[#09B1BA]" />
-                </button>
+          {/* Right: price + status badge */}
+          <div className="flex flex-col items-end justify-between flex-shrink-0">
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatCurrency(item.listed_price)}</span>
+
+            <div className="flex gap-1">
+              {item.status === 'en_stock' && (
                 <button
                   onClick={() => actions.setEditDialogOpen(true)}
                   className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center active:scale-95 transition-transform"
                 >
                   <Pencil className="h-3.5 w-3.5 text-slate-500" />
                 </button>
-              </>
-            )}
-            {item.status === 'en_transit' && (
-              <button
-                onClick={actions.handleFinalizeSale}
-                className="h-7 px-2.5 rounded-full bg-emerald-500 flex items-center justify-center gap-1 active:scale-95 transition-transform"
-              >
-                <Check className="h-3.5 w-3.5 text-white" />
-                <span className="text-[10px] font-bold text-white">Livré</span>
-              </button>
-            )}
-            {item.status === 'vendu' && (
-              <span className="text-[10px] font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
-                {item.sold_at ? format(new Date(item.sold_at), 'dd MMM', { locale: fr }) : 'Vendu'}
-              </span>
-            )}
-            <button
-              onClick={actions.handleDelete}
-              className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-slate-400" />
-            </button>
+              )}
+              {item.status === 'en_transit' && (
+                <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded-full">
+                  En transit
+                </span>
+              )}
+              {item.status === 'vendu' && (
+                <span className="text-[10px] font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                  {item.sold_at ? format(new Date(item.sold_at), 'dd MMM', { locale: fr }) : 'Vendu'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </SwipeableRow>
 
       {/* Dialogs */}
       <SoldDialog item={item} open={actions.soldDialogOpen} onOpenChange={actions.setSoldDialogOpen} onSubmit={actions.handleTransitWithPrice} />

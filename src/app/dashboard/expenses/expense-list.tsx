@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { deleteExpense } from './actions'
 import { toast } from 'sonner'
 import type { Expense } from '@/types'
+import { SwipeableRow } from '@/components/swipeable-row'
 import {
   Table,
   TableBody,
@@ -45,29 +46,30 @@ export function ExpenseList({ expenses }: { expenses: Expense[] }) {
       {/* Mobile: compact cards */}
       <div className="flex flex-col gap-2 sm:hidden">
         {expenses.map((expense) => (
-          <div
+          <SwipeableRow
             key={expense.id}
-            className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card"
+            rightAction={{
+              icon: <Trash2 className="h-5 w-5 text-white" />,
+              label: 'Supprimer',
+              color: '#ef4444',
+              onAction: () => handleDelete(expense.id),
+            }}
           >
-            <div className="h-9 w-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-              <Receipt className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-card">
+              <div className="h-9 w-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <Receipt className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{expense.title}</p>
+                <p className="text-[11px] text-slate-400">
+                  {format(new Date(expense.date), 'dd MMM yyyy', { locale: fr })}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-red-500 flex-shrink-0">
+                -{formatCurrency(expense.amount)}
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{expense.title}</p>
-              <p className="text-[11px] text-slate-400">
-                {format(new Date(expense.date), 'dd MMM yyyy', { locale: fr })}
-              </p>
-            </div>
-            <span className="text-sm font-bold text-red-500 flex-shrink-0">
-              -{formatCurrency(expense.amount)}
-            </span>
-            <button
-              onClick={() => handleDelete(expense.id)}
-              className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-slate-400" />
-            </button>
-          </div>
+          </SwipeableRow>
         ))}
       </div>
 
