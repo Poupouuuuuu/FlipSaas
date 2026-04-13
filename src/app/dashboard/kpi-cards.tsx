@@ -62,7 +62,7 @@ export async function KpiCards() {
     <>
       {/* Mobile: 3 essential KPIs */}
       <div className="grid grid-cols-3 gap-2.5 md:hidden">
-        {/* Profit */}
+        {/* Profit net */}
         <Card className="shadow-sm border-emerald-100 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50/80 to-white dark:from-emerald-950/30 dark:to-slate-900 overflow-hidden relative">
           <CardContent className="p-3">
             <PiggyBank className="h-4 w-4 text-emerald-500/60 mb-1" />
@@ -73,21 +73,21 @@ export async function KpiCards() {
           </CardContent>
         </Card>
 
-        {/* Budget */}
+        {/* Total reçu */}
         <Card className="shadow-sm border-[#09B1BA]/20 dark:border-[#09B1BA]/10 bg-gradient-to-br from-[#09B1BA]/5 to-white dark:from-[#09B1BA]/10 dark:to-slate-900 overflow-hidden relative">
           <CardContent className="p-3">
-            <Wallet className="h-4 w-4 text-[#09B1BA]/60 mb-1" />
+            <Euro className="h-4 w-4 text-[#09B1BA]/60 mb-1" />
             <div className="text-base font-bold tracking-tight text-[#09B1BA]">
-              {formatCurrency(reinvestableBudget)}
+              {formatCurrency(totalReceived)}
             </div>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Budget dispo</p>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">Total reçu</p>
           </CardContent>
         </Card>
 
-        {/* Stock value */}
+        {/* Potentiel de vente */}
         <Card className="shadow-sm border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-950/30 dark:to-slate-900 overflow-hidden relative">
           <CardContent className="p-3">
-            <PackageOpen className="h-4 w-4 text-indigo-500/60 mb-1" />
+            <TrendingUp className="h-4 w-4 text-indigo-500/60 mb-1" />
             <div className="text-base font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
               {formatCurrency(potentialSales)}
             </div>
