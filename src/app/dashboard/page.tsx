@@ -4,20 +4,15 @@ import { QuickActions } from './quick-actions'
 import { WeeklyStats } from './weekly-stats'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { createClient } from '@/utils/supabase/server'
+import { getUser, getUserProfile, createClient } from '@/utils/supabase/server'
 
 export default async function Dashboard() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const [user, profile] = await Promise.all([getUser(), getUserProfile()])
 
   let isLimited = false
   if (user) {
-    const [profileRes, countRes] = await Promise.all([
-      supabase.from('users').select('subscription_status, role').eq('id', user.id).single(),
-      supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-    ])
-    const profile = profileRes.data
-    const count = countRes.count
+    const supabase = await createClient()
+    const { count } = await supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
     isLimited = profile?.subscription_status !== 'active'
       && profile?.role !== 'admin'
       && (count || 0) >= 3

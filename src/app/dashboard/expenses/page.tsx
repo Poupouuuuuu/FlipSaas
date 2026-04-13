@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, createClient } from '@/utils/supabase/server'
 import { AddExpenseForm } from './expense-form'
 import { ExpenseList } from './expense-list'
 import { ExpenseFab } from './expense-fab'
@@ -7,10 +7,10 @@ import { Pagination } from '@/components/pagination'
 const PAGE_SIZE = 20
 
 export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const user = await getUser()
   if (!user) return null
+
+  const supabase = await createClient()
 
   const params = await searchParams
   const page = Math.max(1, Number(params.page) || 1)

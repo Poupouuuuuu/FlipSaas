@@ -1,13 +1,12 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, createClient } from '@/utils/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, Wallet, PackageOpen, PiggyBank, Euro } from 'lucide-react'
 
 export async function KpiCards() {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) return null
 
+  const supabase = await createClient()
   const [{ data: items }, { data: expenses }] = await Promise.all([
     supabase.from('items').select('status, purchase_price, listed_price, sold_price, quantity, sold_from_id').eq('user_id', user.id),
     supabase.from('expenses').select('amount').eq('user_id', user.id),

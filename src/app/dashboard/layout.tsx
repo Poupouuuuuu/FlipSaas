@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, getUserProfile } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { DesktopSidebar, MobileHeader } from './sidebar-nav'
 import { BottomNav } from './bottom-nav'
@@ -11,14 +11,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
 
   if (!user) {
     redirect('/login')
   }
 
-  const { data: userData } = await supabase.from('users').select('role, subscription_status, has_onboarded').eq('id', user.id).single()
+  const userData = await getUserProfile()
   const isAdmin = userData?.role === 'admin'
   const isSubscribed = userData?.subscription_status === 'active' || isAdmin
   const hasOnboarded = userData?.has_onboarded ?? false

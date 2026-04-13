@@ -1,11 +1,11 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, createClient } from '@/utils/supabase/server'
 import { WeeklyStatsClient } from './weekly-stats-client'
 
 export async function WeeklyStats() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) return null
 
+  const supabase = await createClient()
   // Fetch all sold items with dates (we'll filter client-side for week navigation)
   const { data: soldItems } = await supabase
     .from('items')

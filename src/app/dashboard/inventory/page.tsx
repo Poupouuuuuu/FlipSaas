@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, getUserProfile, createClient } from '@/utils/supabase/server'
 import { AddItemDialog } from './add-item-dialog'
 import { InventoryClient } from './inventory-client'
 import { InventoryFab } from './inventory-fab'
@@ -11,11 +11,10 @@ type SortOption = 'date_desc' | 'date_asc' | 'price_asc' | 'price_desc' | 'liste
 const VALID_SORTS: SortOption[] = ['date_desc', 'date_asc', 'price_asc', 'price_desc', 'listed_asc', 'listed_desc']
 
 export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string; q?: string; sort?: string }> }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const user = await getUser()
   if (!user) return null
 
+  const supabase = await createClient()
   const params = await searchParams
   const status = params.status || 'en_stock'
   const search = params.q?.trim() || ''
@@ -23,17 +22,17 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const page = Math.max(1, Number(params.page) || 1)
   const offset = (page - 1) * PAGE_SIZE
 
-  // Counts for tab badges + subscription check in parallel
+  // Counts for tab badges + profile in parallel (profile is cached)
   const [
     { count: stockCount },
     { count: transitCount },
     { count: soldCount },
-    { data: profile },
+    profile,
   ] = await Promise.all([
     supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'en_stock'),
     supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'en_transit'),
     supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'vendu'),
-    supabase.from('users').select('subscription_status, role').eq('id', user.id).single(),
+    getUserProfile(),
   ])
 
   // Main query with pagination + server-side search

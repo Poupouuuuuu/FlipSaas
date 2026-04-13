@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getUser, createClient } from '@/utils/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -6,10 +6,10 @@ import { TrendingUp, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 
 export async function RecentSales() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getUser()
   if (!user) return null
 
+  const supabase = await createClient()
   const { data: recentSoldItems } = await supabase
     .from('items')
     .select('id, title, image_url, purchase_price, sold_price, sold_at')
