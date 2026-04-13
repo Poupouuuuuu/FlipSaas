@@ -1,14 +1,12 @@
 import Link from 'next/link'
-import { Zap, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { LogoWithText } from '@/components/logo'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 px-4">
-      <div className="flex items-center gap-2 mb-8">
-        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-[#09B1BA] to-[#06D6A0] flex items-center justify-center">
-          <Zap className="h-5 w-5 text-white" />
-        </div>
-        <span className="text-xl font-bold tracking-tight">Stockeesy</span>
+      <div className="mb-8">
+        <LogoWithText size={40} />
       </div>
 
       <h1 className="text-7xl sm:text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#09B1BA] to-[#06D6A0]">

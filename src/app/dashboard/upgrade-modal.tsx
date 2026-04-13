@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Lock, Check, Zap, ArrowRight } from 'lucide-react'
+import { Lock, Check, ArrowRight } from 'lucide-react'
+import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,8 +33,8 @@ export function UpgradeModal({ children }: { children: React.ReactNode }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="mx-auto mb-2 h-12 w-12 rounded-full bg-gradient-to-br from-[#09B1BA] to-[#06D6A0] flex items-center justify-center">
-              <Zap className="h-6 w-6 text-white" />
+            <div className="mx-auto mb-2">
+              <Logo size={48} />
             </div>
             <DialogTitle className="text-center text-xl">Passe en illimité</DialogTitle>
             <DialogDescription className="text-center">

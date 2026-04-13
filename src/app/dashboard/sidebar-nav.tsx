@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Package, Receipt, LogOut, Users, CreditCard, Menu, UserCircle } from 'lucide-react'
+import { Logo, LogoWithText } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -86,9 +87,8 @@ export function DesktopSidebar({ isSubscribed, isAdmin }: { isSubscribed: boolea
   return (
     <aside className="hidden w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-card md:flex shadow-sm z-10 relative">
       <div className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 px-4 lg:h-[60px] lg:px-6">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-[#09B1BA] text-lg tracking-tight">
-          <Package className="h-6 w-6" />
-          <span>Stockeesy</span>
+        <Link href="/dashboard">
+          <LogoWithText size={28} />
         </Link>
       </div>
       <div className="flex-1 overflow-auto py-4">
@@ -125,9 +125,8 @@ export function MobileHeader({ isSubscribed, isAdmin, userEmail }: SidebarNavPro
             <SheetDescription className="sr-only">Naviguez dans le dashboard</SheetDescription>
             
             <div className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 px-4">
-              <Link href="/dashboard" className="flex items-center gap-2 font-bold text-[#09B1BA] text-lg tracking-tight" onClick={closeSheet}>
-                <Package className="h-6 w-6" />
-                <span>Stockeesy</span>
+              <Link href="/dashboard" onClick={closeSheet}>
+                <LogoWithText size={28} />
               </Link>
             </div>
             
@@ -146,8 +145,8 @@ export function MobileHeader({ isSubscribed, isAdmin, userEmail }: SidebarNavPro
           </SheetContent>
         </Sheet>
 
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold text-[#09B1BA] text-lg">
-          <Package className="h-6 w-6" />
+        <Link href="/dashboard">
+          <Logo size={28} />
         </Link>
       </div>
       

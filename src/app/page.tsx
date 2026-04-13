@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Zap,
 } from 'lucide-react'
+import { Logo } from '@/components/logo'
 
 export default async function LandingPage() {
   const price = await getDisplayPrice()
@@ -21,9 +22,7 @@ export default async function LandingPage() {
       <nav className="sticky top-0 z-50 border-b border-slate-100 dark:border-slate-800/50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg safe-top">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#09B1BA] to-[#06D6A0] flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
+            <Logo size={32} />
             <span className="text-lg font-bold tracking-tight">Stockeesy</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -53,7 +52,7 @@ export default async function LandingPage() {
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-28 sm:pb-32 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#09B1BA]/20 bg-[#09B1BA]/5 text-[#09B1BA] text-sm font-medium mb-6 sm:mb-8">
-            <Zap className="h-3.5 w-3.5" />
+            <Logo size={16} className="rounded-sm" />
             Stockeesy
           </div>
 
@@ -293,7 +292,7 @@ export default async function LandingPage() {
               {/* Badge */}
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-gradient-to-r from-[#09B1BA] to-[#06D6A0] text-white text-xs font-bold uppercase tracking-wider">
-                  <Zap className="h-3 w-3" />
+                  <Logo size={14} className="rounded-sm" />
                   Pro
                 </span>
               </div>
@@ -345,9 +344,7 @@ export default async function LandingPage() {
             {/* Brand */}
             <div className="flex flex-col items-center sm:items-start gap-1">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#09B1BA] to-[#06D6A0] flex items-center justify-center">
-                  <Zap className="h-3.5 w-3.5 text-white" />
-                </div>
+                <Logo size={28} />
                 <span className="text-base font-bold">Stockeesy</span>
               </div>
               <p className="text-sm text-slate-400">L&apos;outil des revendeurs malins.</p>
