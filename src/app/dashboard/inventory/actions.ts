@@ -43,7 +43,8 @@ export async function addItem(formData: FormData) {
     .eq('id', user.id)
     .single()
 
-  if (profile?.subscription_status !== 'active' && profile?.role !== 'admin') {
+  const { hasFullAccess: hasAccess } = await import('@/lib/subscription')
+  if (!hasAccess(profile?.subscription_status ?? null, profile?.role ?? null)) {
     const { count } = await supabase
       .from('items')
       .select('*', { count: 'exact', head: true })

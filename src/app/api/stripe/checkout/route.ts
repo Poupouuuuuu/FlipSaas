@@ -5,6 +5,18 @@ import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
   try {
+    const priceId = process.env.STRIPE_PRICE_ID
+    if (!priceId) {
+      console.error('STRIPE_PRICE_ID is not configured')
+      return NextResponse.json({ error: 'Configuration manquante' }, { status: 500 })
+    }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+    if (!siteUrl) {
+      console.error('NEXT_PUBLIC_SITE_URL is not configured')
+      return NextResponse.json({ error: 'Configuration manquante' }, { status: 500 })
+    }
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -27,7 +39,7 @@ export async function POST(req: Request) {
 
     let customerId = userData?.stripe_customer_id
 
-    // Si pas de client Stripe, en créer un
+    // Si pas de client Stripe, en créer un et sauvegarder immédiatement
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -37,12 +49,12 @@ export async function POST(req: Request) {
       })
       customerId = customer.id
 
-      // Sauvegarder dans la DB via un appel admin (Optionnel si RLS l'autorise pas)
-      // Ici on le fait plus tard via le webhook de toute façon, mais c'est mieux de l'avoir en amont
+      // Sauvegarder le customer ID immédiatement (pas attendre le webhook)
+      await supabase
+        .from('users')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user.id)
     }
-
-    const priceId = process.env.STRIPE_PRICE_ID || 'price_xxxxx' // <-- IMPORTANT: L'Admin doit le remplir
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
     // Créer la session Checkout
     const session = await stripe.checkout.sessions.create({

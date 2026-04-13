@@ -1,4 +1,5 @@
 import { getUser, getUserProfile } from '@/utils/supabase/server'
+import { hasFullAccess } from '@/lib/subscription'
 import { redirect } from 'next/navigation'
 import { DesktopSidebar, MobileHeader } from './sidebar-nav'
 import { BottomNav } from './bottom-nav'
@@ -19,7 +20,7 @@ export default async function DashboardLayout({
 
   const userData = await getUserProfile()
   const isAdmin = userData?.role === 'admin'
-  const isSubscribed = userData?.subscription_status === 'active' || isAdmin
+  const isSubscribed = hasFullAccess(userData?.subscription_status ?? null, userData?.role ?? null)
   const hasOnboarded = userData?.has_onboarded ?? false
 
   return (

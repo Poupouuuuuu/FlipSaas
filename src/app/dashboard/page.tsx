@@ -5,6 +5,7 @@ import { WeeklyStats } from './weekly-stats'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getUser, getUserProfile, createClient } from '@/utils/supabase/server'
+import { hasFullAccess } from '@/lib/subscription'
 
 export default async function Dashboard() {
   const [user, profile] = await Promise.all([getUser(), getUserProfile()])
@@ -13,8 +14,7 @@ export default async function Dashboard() {
   if (user) {
     const supabase = await createClient()
     const { count } = await supabase.from('items').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
-    isLimited = profile?.subscription_status !== 'active'
-      && profile?.role !== 'admin'
+    isLimited = !hasFullAccess(profile?.subscription_status ?? null, profile?.role ?? null)
       && (count || 0) >= 3
   }
 

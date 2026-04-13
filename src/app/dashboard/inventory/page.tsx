@@ -1,4 +1,5 @@
 import { getUser, getUserProfile, createClient } from '@/utils/supabase/server'
+import { hasFullAccess } from '@/lib/subscription'
 import { AddItemDialog } from './add-item-dialog'
 import { InventoryClient } from './inventory-client'
 import { InventoryFab } from './inventory-fab'
@@ -64,8 +65,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const totalPages = Math.ceil((totalCount || 0) / PAGE_SIZE)
 
   const totalItemCount = (stockCount || 0) + (transitCount || 0) + (soldCount || 0)
-  const isLimited = profile?.subscription_status !== 'active'
-    && profile?.role !== 'admin'
+  const isLimited = !hasFullAccess(profile?.subscription_status ?? null, profile?.role ?? null)
     && totalItemCount >= 3
 
   const tabs = [
