@@ -1,3 +1,8 @@
+export interface SizeVariant {
+  size: string
+  qty: number
+}
+
 export interface Item {
   id: string
   user_id: string
@@ -9,6 +14,11 @@ export interface Item {
   sold_price: number | null
   sold_at: string | null
   created_at: string
+  quantity: number
+  is_permanent: boolean
+  variants: SizeVariant[] | null
+  sold_from_id: string | null
+  size_label: string | null
 }
 
 export interface Expense {

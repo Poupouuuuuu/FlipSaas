@@ -10,16 +10,33 @@ export async function KpiCards() {
   if (!user) return null
 
   const [{ data: items }, { data: expenses }] = await Promise.all([
-    supabase.from('items').select('status, purchase_price, listed_price, sold_price').eq('user_id', user.id),
+    supabase.from('items').select('status, purchase_price, listed_price, sold_price, quantity, sold_from_id').eq('user_id', user.id),
     supabase.from('expenses').select('amount').eq('user_id', user.id),
   ])
 
   const safeItems = items || []
   const safeExpenses = expenses || []
 
-  const totalItemPurchases = safeItems.reduce((acc, item) => acc + Number(item.purchase_price), 0)
+  // For purchase totals: only count "parent" items (not sold copies which have sold_from_id)
+  // Parent items: purchase_price * quantity represents the total cost of the lot
+  // Sold copies already have their unit purchase_price, but the parent already accounts for the full cost
+  const parentItems = safeItems.filter(item => !item.sold_from_id)
+  const totalItemPurchases = parentItems.reduce((acc, item) => {
+    // For stock items with quantity, the total cost = price * (remaining qty + sold copies)
+    // But simpler: parent purchase_price * original quantity
+    // Since sold copies decrement qty, total = price * qty + price * sold_copies_count
+    // Actually simplest: just sum parent price * qty for stock items + sold copy prices
+    if (item.status === 'en_stock') {
+      return acc + Number(item.purchase_price) * Number(item.quantity)
+    }
+    return acc + Number(item.purchase_price)
+  }, 0)
+  // Add purchase price from sold copies (each represents 1 unit sold from a multi-qty item)
+  const soldCopies = safeItems.filter(item => item.sold_from_id)
+  const soldCopiesPurchase = soldCopies.reduce((acc, item) => acc + Number(item.purchase_price), 0)
+
   const totalExpenses = safeExpenses.reduce((acc, exp) => acc + Number(exp.amount), 0)
-  const totalSpent = totalItemPurchases + totalExpenses
+  const totalSpent = totalItemPurchases + soldCopiesPurchase + totalExpenses
 
   const soldItems = safeItems.filter(item => item.status === 'vendu')
   const totalReceived = soldItems.reduce((acc, item) => acc + Number(item.sold_price || 0), 0)
@@ -29,7 +46,7 @@ export async function KpiCards() {
   const stockItems = safeItems.filter(item => item.status === 'en_stock' || item.status === 'en_transit')
   const potentialSales = stockItems.reduce((acc, item) => {
     if (item.status === 'en_transit') return acc + Number(item.sold_price || item.listed_price)
-    return acc + Number(item.listed_price)
+    return acc + Number(item.listed_price) * Number(item.quantity || 1)
   }, 0)
 
   const inventoryValue = totalReceived + potentialSales

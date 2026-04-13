@@ -14,17 +14,26 @@ export async function addItem(formData: FormData) {
   }
 
   // Validation Zod
+  const variantsRaw = formData.get('variants')
+  let parsedVariants = null
+  if (variantsRaw && typeof variantsRaw === 'string') {
+    try { parsedVariants = JSON.parse(variantsRaw) } catch { parsedVariants = null }
+  }
+
   const parsed = addItemSchema.safeParse({
     title: formData.get('title'),
     purchase_price: Number(formData.get('purchase_price')),
     listed_price: Number(formData.get('listed_price')),
+    quantity: Number(formData.get('quantity')) || 1,
+    is_permanent: formData.get('is_permanent') === 'true',
+    variants: parsedVariants,
   })
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0].message)
   }
 
-  const { title, purchase_price, listed_price } = parsed.data
+  const { title, purchase_price, listed_price, quantity, is_permanent, variants } = parsed.data
   const image = formData.get('image') as File | null
 
   // Vérifier la limite free tier (3 articles max)
@@ -74,7 +83,10 @@ export async function addItem(formData: FormData) {
     purchase_price,
     listed_price,
     image_url,
-    status: 'en_stock'
+    status: 'en_stock',
+    quantity,
+    is_permanent,
+    variants,
   })
 
   if (error) {
@@ -94,6 +106,7 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
   }
 
   const itemId = formData.get('item_id') as string
+  const sizeLabel = formData.get('size_label') as string | null
 
   // Validation Zod
   const parsed = markItemStatusSchema.safeParse({
@@ -107,30 +120,150 @@ export async function markItemAsSoldOrTransit(formData: FormData) {
 
   const { status, sold_price } = parsed.data
 
-  const payload: Partial<Pick<Item, 'status' | 'sold_price' | 'sold_at'>> = { status }
+  // Fetch the original item
+  const { data: originalItem } = await supabase
+    .from('items')
+    .select('*')
+    .eq('id', itemId)
+    .eq('user_id', user.id)
+    .single()
 
-  if (sold_price) {
-    payload.sold_price = sold_price
+  if (!originalItem) {
+    throw new Error("Article introuvable ou non autorisé")
   }
 
-  if (status === 'vendu') {
-    payload.sold_at = new Date().toISOString()
+  // Multi-quantity item: create a sold copy and decrement
+  if (originalItem.quantity > 1) {
+    // Create sold copy
+    const { error: insertError } = await supabase.from('items').insert({
+      user_id: user.id,
+      title: originalItem.title,
+      purchase_price: originalItem.purchase_price,
+      listed_price: originalItem.listed_price,
+      image_url: originalItem.image_url,
+      status,
+      sold_price: sold_price || null,
+      sold_at: status === 'vendu' ? new Date().toISOString() : null,
+      quantity: 1,
+      is_permanent: false,
+      sold_from_id: originalItem.id,
+      size_label: sizeLabel || null,
+    })
+
+    if (insertError) throw new Error("Erreur lors de la création de la vente")
+
+    // Decrement quantity on original
+    const newQty = originalItem.quantity - 1
+
+    // Update variants if applicable
+    let updatedVariants = originalItem.variants
+    if (updatedVariants && sizeLabel) {
+      updatedVariants = (updatedVariants as { size: string; qty: number }[])
+        .map(v => v.size === sizeLabel ? { ...v, qty: v.qty - 1 } : v)
+        .filter(v => v.qty > 0)
+      if (updatedVariants.length === 0) updatedVariants = null
+    }
+
+    const { error: updateError } = await supabase
+      .from('items')
+      .update({ quantity: newQty, variants: updatedVariants })
+      .eq('id', itemId)
+      .eq('user_id', user.id)
+
+    if (updateError) throw new Error("Erreur lors de la mise à jour du stock")
+
+  } else {
+    // Single quantity: update in place (original behavior)
+    const payload: Partial<Item> = { status }
+
+    if (sold_price) payload.sold_price = sold_price
+    if (status === 'vendu') payload.sold_at = new Date().toISOString()
+
+    // For permanent items going to 0, keep the original for restock dialog
+    if (originalItem.is_permanent) {
+      // Create sold copy instead of converting
+      const { error: insertError } = await supabase.from('items').insert({
+        user_id: user.id,
+        title: originalItem.title,
+        purchase_price: originalItem.purchase_price,
+        listed_price: originalItem.listed_price,
+        image_url: originalItem.image_url,
+        status,
+        sold_price: sold_price || null,
+        sold_at: status === 'vendu' ? new Date().toISOString() : null,
+        quantity: 1,
+        is_permanent: false,
+        sold_from_id: originalItem.id,
+        size_label: sizeLabel || null,
+      })
+
+      if (insertError) throw new Error("Erreur lors de la création de la vente")
+
+      // Set quantity to 0 but keep the item
+      const { error: updateError } = await supabase
+        .from('items')
+        .update({ quantity: 0 })
+        .eq('id', itemId)
+        .eq('user_id', user.id)
+
+      if (updateError) throw new Error("Erreur lors de la mise à jour du stock")
+    } else {
+      // Non-permanent single item: convert directly
+      const { error, count } = await supabase
+        .from('items')
+        .update(payload, { count: 'exact' })
+        .eq('id', itemId)
+        .eq('user_id', user.id)
+
+      if (error) throw new Error("Erreur de mise à jour du statut")
+      if (count === 0) throw new Error("Article introuvable ou non autorisé")
+    }
   }
 
-  // Ownership check : .eq('user_id', user.id)
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/inventory')
+}
+
+export async function restockItem(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Utilisateur non connecté')
+
+  const itemId = formData.get('item_id') as string
+  const newQuantity = Number(formData.get('quantity'))
+
+  if (!newQuantity || newQuantity < 1) throw new Error('Quantité invalide')
+
   const { error, count } = await supabase
     .from('items')
-    .update(payload, { count: 'exact' })
+    .update({ quantity: newQuantity }, { count: 'exact' })
+    .eq('id', itemId)
+    .eq('user_id', user.id)
+    .eq('is_permanent', true)
+
+  if (error) throw new Error("Erreur lors du restockage")
+  if (count === 0) throw new Error("Article introuvable")
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/inventory')
+}
+
+export async function removeItem(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Utilisateur non connecté')
+
+  const itemId = formData.get('item_id') as string
+
+  const { error } = await supabase
+    .from('items')
+    .delete()
     .eq('id', itemId)
     .eq('user_id', user.id)
 
-  if (error) {
-    throw new Error("Erreur de mise à jour du statut")
-  }
-
-  if (count === 0) {
-    throw new Error("Article introuvable ou non autorisé")
-  }
+  if (error) throw new Error("Erreur lors de la suppression")
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/inventory')
