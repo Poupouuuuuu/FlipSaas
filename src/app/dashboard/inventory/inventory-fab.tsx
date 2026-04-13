@@ -129,7 +129,7 @@ export function InventoryFab({ isLimited = false }: { isLimited?: boolean }) {
         <Plus className="h-7 w-7" />
       </button>
 
-      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetState() }}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Ajouter au stock</DialogTitle>

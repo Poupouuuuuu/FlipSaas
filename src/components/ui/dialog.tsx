@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRef, useCallback, useState } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
@@ -39,6 +40,48 @@ function DialogOverlay({
   )
 }
 
+function DragHandle({ onClose }: { onClose: () => void }) {
+  const startY = useRef(0)
+  const currentY = useRef(0)
+  const dragging = useRef(false)
+  const [dragOffset, setDragOffset] = useState(0)
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    startY.current = e.touches[0].clientY
+    currentY.current = 0
+    dragging.current = true
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!dragging.current) return
+    const dy = e.touches[0].clientY - startY.current
+    if (dy < 0) return // only allow downward drag
+    currentY.current = dy
+    setDragOffset(dy)
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!dragging.current) return
+    dragging.current = false
+    if (currentY.current > 80) {
+      onClose()
+    }
+    setDragOffset(0)
+  }, [onClose])
+
+  return (
+    <div
+      className="flex justify-center py-2 -mx-4 -mt-4 px-4 pt-4 cursor-grab sm:hidden touch-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={dragOffset > 0 ? { transform: `translateY(${Math.min(dragOffset * 0.4, 40)}px)`, opacity: Math.max(0.3, 1 - dragOffset / 200) } : undefined}
+    >
+      <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />
+    </div>
+  )
+}
+
 function DialogContent({
   className,
   children,
@@ -47,10 +90,22 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
 }) {
+  const popupRef = useRef<HTMLDivElement>(null)
+
+  const handleSwipeClose = useCallback(() => {
+    // Find the dialog's close mechanism via the popup ref
+    const popup = popupRef.current
+    if (popup) {
+      // Dispatch escape key to trigger base-ui close
+      popup.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    }
+  }, [])
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
+        ref={popupRef}
         data-slot="dialog-content"
         className={cn(
           // Mobile: bottom sheet
@@ -66,8 +121,8 @@ function DialogContent({
         )}
         {...props}
       >
-        {/* Mobile drag handle */}
-        <div className="mx-auto w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600 sm:hidden flex-shrink-0" />
+        {/* Mobile drag handle with swipe-to-close */}
+        <DragHandle onClose={handleSwipeClose} />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close

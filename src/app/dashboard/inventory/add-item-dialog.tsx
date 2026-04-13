@@ -125,7 +125,7 @@ export function AddItemDialog({ isLimited = false }: { isLimited?: boolean }) {
   const totalSizeQty = variants.reduce((sum, v) => sum + v.qty, 0)
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetState() }}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button className="bg-[#09B1BA] hover:bg-[#0799a1] text-white" />}>
         <Plus className="mr-2 h-4 w-4" />
         Ajouter un article
